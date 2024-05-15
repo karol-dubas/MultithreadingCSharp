@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AsyncApi", "AsyncApi", "{88B1D314-C687-44D4-96C1-67EFDF563DD4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncApiTests", "AsyncApi\AsyncApiTests\AsyncApiTests.csproj", "{53B8B86A-333C-4A44-A102-1782161AB427}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncApi.LoadTests", "AsyncApi\AsyncApi.LoadTests\AsyncApi.LoadTests.csproj", "{53B8B86A-333C-4A44-A102-1782161AB427}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncApi", "AsyncApi\AsyncApi\AsyncApi.csproj", "{63E850AA-E17A-41AB-81BB-5449345EB3AB}"
 EndProject
