@@ -1063,21 +1063,17 @@ Completed 2
 
 # Asynchronous, parallel, concurrent programming
 
-## Concurrent & parallel
-
-Multitasking, solving problems "at the same time".
-
-### Concurrent
+## Concurrent
 
 Concurrent programming made it possible to solve the problem of multitasking when the first OS were created, even with only 1 CPU core.
 During concurrent programming, there is a context switching, that is imperceptible to humans (looks like parallelism).
 
-### Parallel
+## Parallel
 
 CPU cores can perform operations independently, so with their use we can program in parallel.
 Used in the CPU bound scenarios to maximize performance.
 
-![Concurrency vs Parallelism](image.png)
+![Concurrency vs Parallelism](assets/image.png)
 
 Both approaches can be used at the same time.
 
@@ -1085,7 +1081,7 @@ Both approaches can be used at the same time.
 
 Used for I/O operations that are beyond the scope of the application and require processing time in an external program.
 After calling an I/O operation, we can wait for the result
-- blocking the resources until the result is returned
+- synchronously, blocking the resources until the result is returned
 - asynchronously, which doesn't block the resources.
 
 # C# asynchronous patterns history
@@ -1097,9 +1093,11 @@ TAP - Task-based Asynchronous Programming
 # Synchronous (blocking) web server example
 
 Synchronous web application with 1 CPU core during the request execution starts a new thread, if it performs synchronous operation, it will block the application.
-If application used by more than 1 user, concurrent programming with context switching is used to handle such requests (1 CPU core).
-Web server has a thread pool with limited number of threads (that handle requests). By default it's `(CPU physical core number) x (number of threads that can be run on each core)`, so if the CPU has 6 cores and 2 threads on each, there will be 12 threads in the thread pool to use. When the number of available threads is exceeded, a thread throttling mechanism is used.
+If application is used by more than 1 user, concurrent programming with context switching is used to handle such requests (1 CPU core).
+Web server has a thread pool with limited number of threads (that handle requests). By default it's `(CPU physical core number) x (number of threads that can be run on each core)`, so if the CPU has 6 cores and 2 threads on each, there will be 12 threads in the thread pool available to use. When the number of available threads is exceeded, a thread throttling mechanism kicks in.
 The synchronous approach makes the thread in such an approach wait most of the time for the result and during this time it could perform other operations.
+
+![alt text](assets/image-1.png)
 
 ```cs
 app.MapGet("/sync", () =>
@@ -1120,16 +1118,15 @@ API sync load test scenario (5s timeout)
     - fail:     112     (min > 5s)
 ```
 
-![alt text](image-1.png)
-
 # Asynchronous web server example
 
-Asynchronous programming can be impltemented on 1 thread, but doesn't require more than 1 core or 1 thread.
+Asynchronous programming can be impltemented on 1 thread, it doesn't require more than 1 core or 1 thread, but it's welcomed to use muliple threads.
 
-In the asynchronous version as in the synchronous version - one thread is taken from the thread pool to handle the request, but instead of blocking the thread, while waiting for the result, it is returned to the thread pool and it can be resued by another request. Adter receiving the result continuation doens't have to take place on the same thread on which it was started, Thread Pool can allocate another thread. Storing context execution is needed to continue code execution properly.
+In the asynchronous version as in the synchronous version - one thread is taken from the thread pool to handle the request, but instead of blocking the thread, while waiting for the result, it is returned to the thread pool and it can be resued by another request. After receiving the result continuation doens't have to take place on the same thread on which it was started, Thread Pool can allocate another thread. Storing context execution is needed to continue code execution properly.
+
+![alt text](assets/image-2.png)
 
 `Task` is a representation of asynchronous operation that can return a result
-`await` returns the control to caller (non-blocking)
 
 ```cs
 app.MapGet("/async", async () =>
@@ -1151,13 +1148,24 @@ API async load test scenario (5s timeout)
     - fail:     67      (min > 5s)
 ```
 
-![alt text](image-2.png)
-
 # Awaiting results
 
 Debugging doesn't stop asynchronous operations.
 
-The `await` keyword guarantees that the code after it won't be executed until the asynchronous operation is completed.
+The `await` keyword guarantees that the code after it won't be executed until the asynchronous operation is completed and unwraps `Task<T>` result.
+Skipping the `await` async operation will execute it in the background (fire and forget).
+
+```cs
+// ~0ms elapsed
+var delayTask = Task.Delay(1500); // Run task and continue code execution (no await)
+// ~0ms elapsed
+await Task.Delay(500); // Awaiting a task, code execution won't continue
+// ~500ms elapsed
+await delayTask; // Await first delay, but 500ms already elapsed, so awaiting will last 1000ms
+// ~1500ms elapsed (500ms + 1000ms)
+```
+
+`await` returns the control to caller (non-blocking)
 
 ================================================================================================
 
@@ -1188,7 +1196,7 @@ Task<List<string>> SearchForStocks()
 ```
 
 ```cs
-var loadLinesTask = awaitSearchForStocks();
+var loadLinesTask = await SearchForStocks();
 
 async Task<List<string>> SearchForStocks()
 {
@@ -1306,11 +1314,11 @@ await foreach (var stock in enumerator) {}
 `Thread.Sleep` - synchronus?
 `Task.Delay` - asynchronous?
 
-2. `Task.Yield`
+1. `Task.Yield`
 
-3. Locking with `lock` etc.
+1. Locking with `lock` etc.
 
 ================================================================================================
 
-[Filip Ekberg, Asynchronous Programming in C#](https://www.pluralsight.com/courses/c-sharp-10-asynchronous-programming)
+[Filip Ekberg, Asynchronous Programming in C#](https://www.pluralsight.com/courses/c-sharp-10-asynchronous-programming)  
 [DevMentors D. Pawlukiewicz, async/await (PL)](https://youtu.be/sCUFQ_VQszs)
