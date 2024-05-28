@@ -1195,6 +1195,212 @@ class Repository
 }
 ```
 
+# Task.WhenAll
+
+```cs
+var repo = new Repository();
+
+var fooTask = repo.GetFooAsync();
+var barTask = repo.GetBarAsync();
+
+Console.WriteLine(fooTask.IsCompleted); // False
+
+// Blocking operation that waits for an asynchronous operation to finish (fooTask.IsCompleted == true)
+// it will run synchronously and may cause a deadlock
+// int fooResult = fooTask.Result;
+
+int[] results = await Task.WhenAll(fooTask, barTask); // Result array is returned
+// ~1000ms elapsed
+
+Console.WriteLine(fooTask.IsCompleted); // True
+
+int result = results.Sum(); // Getting data with array
+
+// Alternative with Task.Result.
+// It was awaited, so Task is completed and it's safe to use Task.Result
+int resultAlt = fooTask.Result + barTask.Result;
+
+Console.WriteLine();
+
+class Repository
+{
+    public async Task<int> GetFooAsync()
+    {
+        await Task.Delay(1000);
+        return 1;
+    }
+    
+    public async Task<int> GetBarAsync()
+    {
+        await Task.Delay(500);
+        return 2;
+    }
+}
+```
+
+# async void
+
+- `await` can be used only on `Task`, because it's a wrapper and pointer to asynchronous operation
+- it's fire and forget, once it's started operation can't be managed
+
+```cs
+Console.WriteLine("Before");
+
+try
+{
+    Test();
+}
+catch (Exception)
+{
+    Console.WriteLine("Exception caught");
+}
+
+Console.WriteLine("After");
+Console.ReadKey();
+
+async void Test()
+{
+    await Task.Delay(100);
+    throw new Exception();
+}
+```
+
+An exception is thrown, but it's outside the `try catch` block.
+Result:
+
+```
+Before
+After
+Unhandled exception. System.Exception: Exception of type 'System.Exception' was thrown.
+   at Program.<<Main>$>g__Test|0_0() in C:\Users\Z006F9SX\RiderProjects\CSharpAsync\AsyncVoid\Program.cs:line 18
+   ...
+```
+
+When signature is changed to Task, but call isn't awaited:
+
+```cs
+Console.WriteLine("Before");
+
+try
+{
+    Test(); // No await, exception lost
+}
+catch (Exception)
+{
+    Console.WriteLine("Exception caught");
+}
+
+Console.WriteLine("After");
+Console.ReadKey();
+
+async Task Test()
+{
+    await Task.Delay(100);
+    throw new Exception();
+}
+```
+
+An exception is still thrown, now `Task` object wraps & contains it, without `await` it's lost. but it doesn't crash te app
+Result:
+
+```
+Before
+After
+```
+# Own async state machine
+
+When returning control to the caller with `await`, the context in which the operation will be resumed after receiving the result is stored.
+In practice after receiving a result, it looks as if the method is executed not from the beginning, but for example somewhere in the middle of the method (after `await`).
+Keywords `async` and `await` are just a syntax sugar, they don't exist in low level C#/IL compiled code.
+
+```cs
+string value = await GetAsync(); // start async state machine
+Console.WriteLine(value);
+
+// Every async method will look like this, only different method builders are used
+Task<string> GetAsync() // no async
+{
+    var stateMachine = new StateMachine
+    {
+        State = -1, // initial state
+        MethodBuilder = AsyncTaskMethodBuilder<string>.Create()
+    };
+    
+    stateMachine.MethodBuilder.Start(ref stateMachine); // calls StateMachine.MoveNext
+    return stateMachine.MethodBuilder.Task; // Task.Status = WaitingForActivation
+}
+
+// struct only in Release mode, in Debug it's a sealed class
+internal struct StateMachine : IAsyncStateMachine
+{
+    public int State;
+    public AsyncTaskMethodBuilder<string> MethodBuilder;
+    
+    private TaskAwaiter _taskAwaiter;
+    
+    void IAsyncStateMachine.MoveNext()
+    {
+        try
+        {
+            if (State == -1) // not started yet
+            {
+                Console.WriteLine("Starting async operation...");
+
+                // No await here, GetAwaiter returns TaskAwaiter, which awaits result of this asynchronous operation.
+                // When it returns a value TaskAwaiter<T> is used instead.
+                _taskAwaiter = Task.Delay(3_000).GetAwaiter();
+
+                if (_taskAwaiter.IsCompleted) // lucky check
+                {
+                    Console.WriteLine("Async operation completed immediately");
+                    State = 0;
+                }
+                else
+                {
+                    State = 0; // next time it enters MoveNext method it will instantly take a result
+
+                    // Schedule state machine to execute when async operation is completed.
+                    // It saves the state machine's state (stack -> heap) and returns control to the caller.
+                    // Task Scheduler and OS is involved to resume code execution when result is available.
+                    MethodBuilder.AwaitUnsafeOnCompleted(ref _taskAwaiter, ref this);
+                    Console.WriteLine("State machine state moved to heap");
+                    return; // state saved, leave and wait for a result
+                }
+            }
+
+            if (State == 0) // task completion
+            {
+                // TaskAwaiter.GetResult is a blocking operation, like Task.Result, when async operation isn't completed.
+                // It returns void here, but it can return a generic type.
+                _taskAwaiter.GetResult();
+
+                Console.WriteLine("Async operation completed");
+                MethodBuilder.SetResult("async result");
+                State = -2; // finished
+            }
+        }
+        catch (Exception e)
+        {
+            MethodBuilder.SetException(e);
+            State = -2; // finished
+        }
+    }
+
+    void IAsyncStateMachine.SetStateMachine(IAsyncStateMachine stateMachine)
+    {
+        MethodBuilder.SetStateMachine(stateMachine); // associate builder with state machine
+    }
+}
+```
+
+Result:
+```
+Starting async operation...
+State machine state moved to heap
+Async operation completed
+async result
+```
+
 ================================================================================================
 
 # Questions / TODO
