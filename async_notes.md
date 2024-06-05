@@ -202,7 +202,7 @@ await getStocksTask; // Execute this code
   }
   ```
 
-# 3.1 - TPL
+# 3.1 - Task-based asynchronous pattern (TAP)
 
 ## Task class
 
@@ -247,7 +247,7 @@ var data = await Task.Run(() =>
 Stocks.ItemsSource = data.Where(sp => sp.Identifier == StockIdentifier.Text);
 ```
 
-# 3.2 - Creating async operation with TPL Task
+# 3.2 - Creating async operation with Task
 
 - When not awaiting `Task.Run`, the task scheduler will queue this to the thread pool
   and it will execute that whenever there is an available thread.
@@ -908,7 +908,7 @@ Passing `Progress<T>` object to another thread will use synchronization context,
 
 # 6.3. Using Task Completion Source
 
-In C#, there are several options for performing parallel operations. The latest one is the TPL approach.
+In C#, there are several options for performing parallel operations. The latest one is the TAP approach.
 
 ## Event-based asynchronous pattern
 
@@ -947,7 +947,7 @@ ThreadPool.QueueUserWorkItem(_ =>
 ## TaskCompletionSource
 
 - Used for old, legacy code to create awaitable `Task`
-- `TaskCompletionSource<T>` is for consuming a parallel or async operations different than TPL approach,
+- `TaskCompletionSource<T>` is for consuming a parallel or async operations different than TAP approach,
   where `Task` isn't exposed, so no `async` & `await` keywords can be used
 - Creates a `Task` which could be reutrned or awaited
 - `TaskCompletionSource<T>.Task` doens't run anything itself,
