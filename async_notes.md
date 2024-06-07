@@ -1403,6 +1403,35 @@ async result
 
 ================================================================================================
 
+# Basics
+
+- program is run in a thread (main thread)
+- 
+
+
+# C# task eliding
+
+[Stephen Cleary, Eliding Async and Await](https://blog.stephencleary.com/2016/12/eliding-async-await.html)
+
+Dispose pitfall
+
+```cs
+public async Task<string> GetWithKeywordsAsync(string url)
+{
+    using (var client = new HttpClient())
+        return await client.GetStringAsync(url);
+}
+
+public Task<string> GetElidingKeywordsAsync(string url)
+{
+    // Returns a task, but client is disposed
+    using (var client = new HttpClient())
+        return client.GetStringAsync(url);
+}
+```
+
+================================================================================================
+
 # Questions / TODO
 
 1. What is the difference?
