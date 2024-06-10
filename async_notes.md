@@ -1405,9 +1405,42 @@ async result
 
 # Basics
 
-- program is run in a thread (main thread)
-- 
+- Program is run in a thread (main thread)
+- Hyper-Threading/SMT allows CPU core to handle both threads at the same time
 
+TODO: process vs thread
+
+- CPU thread priorities are managed by OS
+  
+  ```cs
+  Process p = Process.GetCurrentProcess();
+  p.PriorityClass = ProcessPriorityClass.High;
+  
+  Thread t = Thread.CurrentThread;
+  t.Priority = ThreadPriority.Highest;
+  ```
+
+# Threads
+
+- Program performance using multiple threads depends on what hardware it is running on
+- `Thread` class is legacy and shouldn't be used directly
+- When *foreground threads* are running then app can't be closed, in contrast to *background threads* 
+
+# ThreadPool
+
+`ThreadPool` in C# manages threads, automates multithreading and allows developers to easily perform async operations.
+It works by reusing threads, dynamically adjusting to the load and distributes work evenly, leading to efficient use of system resources.
+
+Types of threads:
+  - Worker Threads
+  - I/O completion port thread
+
+  ```cs
+  ThreadPool.GetMinThreads(out int minWorkerThreads, out int minCompletionPortThreads);
+  ThreadPool.GetMaxThreads(out int maxWorkerThreads, out int maxCompletionPortThreads);
+  ThreadPool.GetAvailableThreads(out int avWorkerThreads, out int avCompletionPortThreads);
+  ThreadPool.QueueUserWorkItem(_ => Console.WriteLine("Hello from ThreadPool"));
+  ```
 
 # C# task eliding
 
@@ -1585,3 +1618,4 @@ await foreach (var stock in enumerator) {}
 
 [Filip Ekberg, Asynchronous Programming in C#](https://www.pluralsight.com/courses/c-sharp-10-asynchronous-programming)  
 [DevMentors D. Pawlukiewicz, async/await (PL)](https://youtu.be/sCUFQ_VQszs)
+[Cezary Walenciuk, Asynchronous C# (PL)](https://youtu.be/DVjkw3rg0S8)
