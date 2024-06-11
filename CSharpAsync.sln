@@ -24,6 +24,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessThread", "ProcessThr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreadPool", "ThreadPool\ThreadPool.csproj", "{BCD70E76-1AF3-4864-8116-2E60CAC1BFBB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskStatus", "TaskStatus\TaskStatus.csproj", "{F6634895-1B9F-45EC-89C6-8D1B1F7D6F4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunningTasks", "RunningTasks\RunningTasks.csproj", "{3ED81970-D142-4492-B434-1EDCFF4C7AEE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +78,14 @@ Global
 		{BCD70E76-1AF3-4864-8116-2E60CAC1BFBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCD70E76-1AF3-4864-8116-2E60CAC1BFBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCD70E76-1AF3-4864-8116-2E60CAC1BFBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6634895-1B9F-45EC-89C6-8D1B1F7D6F4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6634895-1B9F-45EC-89C6-8D1B1F7D6F4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6634895-1B9F-45EC-89C6-8D1B1F7D6F4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6634895-1B9F-45EC-89C6-8D1B1F7D6F4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ED81970-D142-4492-B434-1EDCFF4C7AEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ED81970-D142-4492-B434-1EDCFF4C7AEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ED81970-D142-4492-B434-1EDCFF4C7AEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ED81970-D142-4492-B434-1EDCFF4C7AEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{53B8B86A-333C-4A44-A102-1782161AB427} = {88B1D314-C687-44D4-96C1-67EFDF563DD4}

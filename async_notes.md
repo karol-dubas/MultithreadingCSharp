@@ -9,7 +9,8 @@
 - Suitable for I/O operations
 - Asynchronous operations occurs in parallel, but it subscribes to when that operation completes
 - `Task` represents asynchronous operation
-- `await` waits for the operation to be completed, then continues execution. Pauses execution of the method until a result is available, without blocking the calling thread
+- `await` waits for the operation to be completed, then continues execution.
+  Pauses execution of the method until a result is available, without blocking the calling thread
 - When debugging `await` call, while waiting for response control is returned to the calling thread (e.g. UI)
 
 ### Usage examples:
@@ -42,8 +43,6 @@
       await getStocksTask; // async/await all the way up
   
       // Everything after await is a continuation
-  
-      AfterLoadingStockData();
   }
   
   async Task GetStocks()
@@ -60,7 +59,10 @@
           Notes.Text = ex.Message;
       }
   }
+
+  // TODO: GetStockPrices signature
   ```
+
   - Can be used only with method that returns `Task`
     
     ```cs
@@ -69,10 +71,7 @@
         await TaskMethod();
     }
 
-    Task TaskMethod() // no async
-    {
-        // ...
-    }
+    Task TaskMethod() { ... } // No async
     ```
 
 # 2.6 - Creating own async method
@@ -110,6 +109,8 @@
 ```cs
 var getStocksTask = GetStocks(); // Create separate thread, with the code to execute
 await getStocksTask; // Execute this code
+
+// TODO: GetStocks signature, is this true?
 ```
 
 # 2.7 - Handling exceptions
@@ -187,8 +188,8 @@ await getStocksTask; // Execute this code
 
 - Asynchronous ASP.NET relieves web server of work and it can take care of other requests while asynchronous
   operations are running
-- `.Result` or `Wait` on `Task` variable will block thread, execution will run synchronously,
-  it may even deadlock whole application
+- `.Result` or `Wait` on `Task` variable will block a thread.
+  Execution will run synchronously, it may even deadlock whole application
 - Using `.Result` in the continuation is fine
 
   ```cs
@@ -231,20 +232,10 @@ Task task2 = Task.Run<T>(() => { return new T(); });
 // and it shoud be executed immediately (assuming that thread pool isn't busy).
 var data = await Task.Run(() =>
 {
-    // Assuming that ReadAllLinesAsync version isn't available
-    var lines = File.ReadAllLines("file.csv");
-    var data = new List<StockPrice>();
-    
-    foreach (var line in lines)
-    {
-        var price = StockPrice.FromCSV(line);
-        data.Add(price);
-    }
-    
-    return data;
+    // ...
 });
 
-Stocks.ItemsSource = data.Where(sp => sp.Identifier == StockIdentifier.Text);
+// data is T of Task<T>, so it's just a generic result
 ```
 
 # 3.2 - Creating async operation with Task
@@ -257,7 +248,7 @@ Stocks.ItemsSource = data.Where(sp => sp.Identifier == StockIdentifier.Text);
 Task.Run(() => {});
 ```
 
-# 3.3 - Obtaining the async result without async await keywords
+# 3.3 - Obtaining the async result without async & await keywords
 
 - `ContinueWith` is an alternative approach to subscribe to an async operation
 
@@ -322,6 +313,7 @@ async Task NestedAsync()
       // Log e.Message
   }
   ```
+
   - `ContinueWith` with error handling options
     
   ```cs
@@ -343,6 +335,7 @@ loadLinesTask.ContinueWith(completedTask =>
     // Will run if successfully completed
 }, TaskContinuationOptions.OnlyOnRanToCompletion);
 ```
+
 # 3.6 - Canceling a Task with CancellationTokenSource
 
 ```cs
@@ -463,19 +456,21 @@ foreach (string identifier in identifiers)
   ```
 
 - With no `await` it isn't executed, it's a representation of loading all the stocks
+  TODO: check " With no `await` it isn't executed"
 
   ```cs
   var allResults = Task.WhenAll(loadingTasks);
   ```
+
 - `Task.WhenAny` returns `Task` after the completion of any first task.
   It can be used to create a timeout:
 
 ```cs
 // ...
-
-var timeoutTask = Task.Delay(2000); // timeout after 2s
+var timeoutTask = Task.Delay(2000);
 var loadAllStocksAtOnceTask = Task.WhenAll(loadingTasks);
 
+ // Timeout after 2s
 var firstCompletedTask = await Task.WhenAny(loadAllStocksAtOnceTask, timeoutTask);
 
 if (firstCompletedTask == timeoutTask)
@@ -487,6 +482,8 @@ return loadAllStocksAtOnceTask.Result;
 but it's easier to use `cancellationTokenSource.CancelAfter` method to achieve a timeout
 
 - When `Task.WhenAll/WhenAny` are awaited it ensures that if any task failed within method, the exception will be propagated back to the calling context
+
+TODO: `Task.WhenAll/WhenAny` exceptions
 
 # 4.3 - Precomputed Results of a Task
 
@@ -577,10 +574,10 @@ private async Task Method2()
 - `IAsyncEnumerable<T>`:
   - Allows for asynchronous retrieval of each item as it arrives to the application
   - Exposes an enumerator that provides asynchronous iteration
-  - No need to return a `Task` if method is `async`
+  - `IAsyncEnumerable` is used instead of `Task` if method is `async`
   - Method must `yield return`
   - Using `yield return` with `IAsyncEnumerable<T>` signals to the iterator using this enumerator that it has an item to process
-  - `async IAsyncEnumerable<T>` metho can't be awaited, because it's an enumeration
+  - `async IAsyncEnumerable<T>` method can't be awaited, because it's an enumeration
   - `await foreach`: 
     - Is used to asynchronously retrieve the data
     - It awaits each item in the enumeration
@@ -617,10 +614,7 @@ public class StockStreamService : IAsyncDisposable
 {
     // ...
 
-    public async ValueTask DisposeAsync()
-    {
-        // ... 
-    }
+    public async ValueTask DisposeAsync() { ... }
 }
 
 await using var service = new StockStreamService();
@@ -801,8 +795,7 @@ private sealed class <Foo>d__6 : IAsyncStateMachine
 }
 ```
 
-Now state machine keeps track of the current state and has an awaiter to keep track of current ongoing operations,
-to know if it's completed
+Now state machine keeps track of the current state and has an awaiter to keep track of current ongoing operations, to know if it's completed
 
 # 5.4. Reducing the Amount of State Machines
 
@@ -949,7 +942,7 @@ ThreadPool.QueueUserWorkItem(_ =>
 - Used for old, legacy code to create awaitable `Task`
 - `TaskCompletionSource<T>` is for consuming a parallel or async operations different than TAP approach,
   where `Task` isn't exposed, so no `async` & `await` keywords can be used
-- Creates a `Task` which could be reutrned or awaited
+- Creates a `Task` which could be returned or awaited
 - `TaskCompletionSource<T>.Task` doens't run anything itself,
   it is marked as completed when it gets the result set on it, so it means it can be awaited
 
@@ -1152,7 +1145,10 @@ API async load test scenario (5s timeout)
 
 Debugging doesn't stop asynchronous operations.
 
-The `await` keyword guarantees that the code after it won't be executed until the asynchronous operation is completed and unwraps `Task<T>` result.
+The `await` keyword:
+  - Guarantees that the code after it won't be executed until the asynchronous operation is completed
+  - Unwraps `Task<T>` result
+  
 Skipping the `await` async operation will execute it in the background (fire and forget).
 
 ```cs
@@ -1240,8 +1236,8 @@ class Repository
 
 # async void
 
-- `await` can be used only on `Task`, because it's a wrapper and pointer to asynchronous operation
-- it's fire and forget, once it's started operation can't be managed
+- `await` can be used only on `Task`, because it's a wrapper and a pointer to asynchronous operation
+- It's fire and forget, once it's started operation can't be managed
 
 ```cs
 Console.WriteLine("Before");
@@ -1272,7 +1268,7 @@ Result:
 Before
 After
 Unhandled exception. System.Exception: Exception of type 'System.Exception' was thrown.
-   at Program.<<Main>$>g__Test|0_0() in C:\Users\Z006F9SX\RiderProjects\CSharpAsync\AsyncVoid\Program.cs:line 18
+   at Program.<<Main>$>g__Test|0_0() in C:\Users\...\Program.cs:line 18
    ...
 ```
 
@@ -1441,6 +1437,53 @@ Types of threads:
   ThreadPool.GetAvailableThreads(out int avWorkerThreads, out int avCompletionPortThreads);
   ThreadPool.QueueUserWorkItem(_ => Console.WriteLine("Hello from ThreadPool"));
   ```
+
+# Task
+
+`Task` & `Task<T>` were created before `async` & `await`, but it was reused in `async` & `await` approach.
+
+# Task.Status
+
+```cs
+var task = new Task(() => { Thread.Sleep(10); });
+
+Console.WriteLine(task.Status);
+
+task.Start();
+
+while (true)
+{
+    Console.WriteLine(task.Status);
+
+    if (task.IsCompleted)
+    {
+        Console.WriteLine(task.Status);
+        break;
+        
+    }
+    
+    Thread.Sleep(1);
+}
+```
+
+Result:
+
+```
+Task.Start
+Task.Factory.StartNew
+Task.Run
+```
+
+# Running Tasks
+
+```cs
+new Task(() => Console.WriteLine("Task.Start")).Start(); // Legacy
+
+await Task.Factory.StartNew(() => 
+    Console.WriteLine("Task.Factory.StartNew")); // Older, more extended Task.Run option, rarely used
+
+await Task.Run(() => Console.WriteLine("Task.Run")); // Currently used with async/await
+```
 
 # C# task eliding
 
