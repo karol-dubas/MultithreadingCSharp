@@ -18,7 +18,3 @@ while (true)
     Thread.Sleep(1);
 }
 
-// Result:
-// Task.Start
-// Task.Factory.StartNew
-// Task.Run

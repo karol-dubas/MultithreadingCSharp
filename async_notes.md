@@ -1467,11 +1467,12 @@ while (true)
 ```
 
 Result:
-
 ```
-Task.Start
-Task.Factory.StartNew
-Task.Run
+Created
+WaitingToRun
+Running
+Running
+RanToCompletion
 ```
 
 # Running Tasks
@@ -1483,6 +1484,14 @@ await Task.Factory.StartNew(() =>
     Console.WriteLine("Task.Factory.StartNew")); // Older, more extended Task.Run option, rarely used
 
 await Task.Run(() => Console.WriteLine("Task.Run")); // Currently used with async/await
+```
+
+Result:
+
+```
+Task.Start
+Task.Factory.StartNew
+Task.Run
 ```
 
 # C# task eliding
@@ -1505,6 +1514,16 @@ public Task<string> GetElidingKeywordsAsync(string url)
         return client.GetStringAsync(url);
 }
 ```
+
+# ASP.NET synchronization context
+
+In ASP.NET Core it was removed so using `Task.ConfigureAwait(false)` doesn't work, but it works in other/older .NET applications.
+
+# Awaitables
+
+Keyword `await` can be used on any *awaitable* type, which can be created by implementing `GetAwaiter` method.
+
+TODO: own awaitable type
 
 ================================================================================================
 
@@ -1532,7 +1551,13 @@ Task<List<string>> SearchForStocks()
         return lines;
     });
 }
+
+// ...
+
+await loadLinesTask;
 ```
+
+vs
 
 ```cs
 var loadLinesTask = await SearchForStocks();
@@ -1661,4 +1686,3 @@ await foreach (var stock in enumerator) {}
 
 [Filip Ekberg, Asynchronous Programming in C#](https://www.pluralsight.com/courses/c-sharp-10-asynchronous-programming)  
 [DevMentors D. Pawlukiewicz, async/await (PL)](https://youtu.be/sCUFQ_VQszs)
-[Cezary Walenciuk, Asynchronous C# (PL)](https://youtu.be/DVjkw3rg0S8)
