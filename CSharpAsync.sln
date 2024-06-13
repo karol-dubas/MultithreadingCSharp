@@ -30,6 +30,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunningTasks", "RunningTask
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnobservedTaskExceptions", "UnobservedTaskExceptions\UnobservedTaskExceptions.csproj", "{B9A6154A-7BB0-4B58-8AB4-31F992CFADC2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrentThread", "CurrentThread\CurrentThread.csproj", "{A0546CE5-761E-414D-82DB-CB3D96389BAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceCondidtions", "RaceCondidtions\RaceCondidtions.csproj", "{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +96,14 @@ Global
 		{B9A6154A-7BB0-4B58-8AB4-31F992CFADC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9A6154A-7BB0-4B58-8AB4-31F992CFADC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9A6154A-7BB0-4B58-8AB4-31F992CFADC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0546CE5-761E-414D-82DB-CB3D96389BAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0546CE5-761E-414D-82DB-CB3D96389BAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0546CE5-761E-414D-82DB-CB3D96389BAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0546CE5-761E-414D-82DB-CB3D96389BAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{53B8B86A-333C-4A44-A102-1782161AB427} = {88B1D314-C687-44D4-96C1-67EFDF563DD4}
