@@ -1527,7 +1527,50 @@ TODO: own awaitable type
 
 ================================================================================================
 
+# Semaphore
 
+- Manages access to shared resources, allows access only for a specified number of threads/objects
+  - - Solves synchronization problem between threads like race conditions
+- `Semaphore` is legacy one, `SemaphoreSlim` is a newer implementation
+
+```cs
+var semaphore = new SemaphoreSlim(1);
+
+for (int i = 0; i < 3; i++)
+{
+    Console.WriteLine($"[{i}] Start");
+    var waitTask = semaphore.WaitAsync();
+
+    if (!waitTask.IsCompleted)
+        Console.WriteLine($"[{i}] Waiting for a semaphore release...");
+
+    await waitTask;
+    
+    Console.WriteLine($"[{i}] Allowed");
+    
+    Task.Run(async () =>
+    {
+        await Task.Delay(500);
+        semaphore.Release();
+    });
+}
+```
+
+Result:
+```
+[0] Start
+[0] Allowed
+[1] Start
+[1] Waiting for a semaphore release...
+[1] Allowed
+[2] Start
+[2] Waiting for a semaphore release...
+[2] Allowed
+```
+
+# Race condition
+
+- Multiple things performing work on the same shared resource
 
 ================================================================================================
 

@@ -34,6 +34,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrentThread", "CurrentThr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceCondidtions", "RaceCondidtions\RaceCondidtions.csproj", "{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Semaphores", "Semaphores\Semaphores.csproj", "{813ECCE4-9106-4B04-BB0F-8C13239B13A6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SynchronizationMechanisms", "SynchronizationMechanisms", "{CFDDFC28-3258-4B2C-83E1-926A21602C05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,9 +108,14 @@ Global
 		{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{483F06A8-B2AB-4BC2-85F8-48DC0D2DAC76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{813ECCE4-9106-4B04-BB0F-8C13239B13A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{813ECCE4-9106-4B04-BB0F-8C13239B13A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{813ECCE4-9106-4B04-BB0F-8C13239B13A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{813ECCE4-9106-4B04-BB0F-8C13239B13A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{53B8B86A-333C-4A44-A102-1782161AB427} = {88B1D314-C687-44D4-96C1-67EFDF563DD4}
 		{63E850AA-E17A-41AB-81BB-5449345EB3AB} = {88B1D314-C687-44D4-96C1-67EFDF563DD4}
+		{813ECCE4-9106-4B04-BB0F-8C13239B13A6} = {CFDDFC28-3258-4B2C-83E1-926A21602C05}
 	EndGlobalSection
 EndGlobal
