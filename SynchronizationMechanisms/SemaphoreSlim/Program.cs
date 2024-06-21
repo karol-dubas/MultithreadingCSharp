@@ -14,7 +14,7 @@ for (int i = 0; i < 3; i++)
     
     Task.Run(async () =>
     {
-        await Task.Delay(Random.Shared.Next(500, 1000));
+        await Task.Delay(1000);
         semaphore.Release();
     });
 }

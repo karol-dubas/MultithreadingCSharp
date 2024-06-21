@@ -8,22 +8,26 @@ var incrementFunc = async () =>
     // To narrow only to increment operation execution,
     // all waiting for semaphore release
     await semaphoreWaitTask;
-
-    number++;
+    
+    Thread.Sleep(10); // To see the "counters" statistics
+    
+    number++; // Race condition
 };
 
-for (int i = 0; i < 1000; i++)
+for (int i = 0; i < 10_000; i++)
 {
     // Schedule a task, execute task, execute increment operation
+    // Tasks are scheduled in parallel
     //var task = Task.Run(incrementFunc); 
     
-    // Race condition
-    var task = incrementFunc(); 
+    // Different from Task.Run,
+    // instead of scheduling a task, the task is created
+    var task = incrementFunc();
     
     tasks.Add(task);
 }
 
-semaphore.Release(); // Run all increments at once
+semaphore.Release(); // Run all increment tasks at once
 await Task.WhenAll(tasks);
 
 Console.WriteLine(number);
