@@ -1,7 +1,8 @@
-﻿var semaphore = new SemaphoreSlim(0);
+﻿var startSemaphore = new SemaphoreSlim(0);
+int totalRuns = 10_000;
 int number = 0;
 List<Task> tasks = [];
-var semaphoreWaitTask = semaphore.WaitAsync();
+var semaphoreWaitTask = startSemaphore.WaitAsync();
 
 var incrementFunc = async () =>
 {
@@ -9,12 +10,12 @@ var incrementFunc = async () =>
     // all waiting for semaphore release
     await semaphoreWaitTask;
     
-    Thread.Sleep(10); // To see the "counters" statistics
+    //Thread.Sleep(10); // To see the "counters" statistics
     
     number++; // Race condition
 };
 
-for (int i = 0; i < 10_000; i++)
+for (int i = 0; i < totalRuns; i++)
 {
     // Schedule a task, execute task, execute increment operation
     // Tasks are scheduled in parallel
@@ -27,7 +28,7 @@ for (int i = 0; i < 10_000; i++)
     tasks.Add(task);
 }
 
-semaphore.Release(); // Run all increment tasks at once
+startSemaphore.Release(); // Run all increment tasks at once
 await Task.WhenAll(tasks);
 
-Console.WriteLine(number);
+Console.WriteLine($"{number}/{totalRuns}");
