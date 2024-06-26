@@ -48,6 +48,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolvedFileRaceCondition", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lock", "SynchronizationMechanisms\Lock\Lock.csproj", "{6A3E26BC-DAE1-48E4-A11A-8123C0E43EEE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreadTask", "ThreadTask\ThreadTask.csproj", "{47A1F0E1-2C55-4138-9F7B-69066E1A26E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -134,6 +136,10 @@ Global
 		{6A3E26BC-DAE1-48E4-A11A-8123C0E43EEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A3E26BC-DAE1-48E4-A11A-8123C0E43EEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A3E26BC-DAE1-48E4-A11A-8123C0E43EEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47A1F0E1-2C55-4138-9F7B-69066E1A26E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47A1F0E1-2C55-4138-9F7B-69066E1A26E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47A1F0E1-2C55-4138-9F7B-69066E1A26E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47A1F0E1-2C55-4138-9F7B-69066E1A26E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{53B8B86A-333C-4A44-A102-1782161AB427} = {88B1D314-C687-44D4-96C1-67EFDF563DD4}
