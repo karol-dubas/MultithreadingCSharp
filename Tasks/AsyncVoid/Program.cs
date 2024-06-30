@@ -2,7 +2,8 @@
 
 try
 {
-    Test2();
+    Test(); // Unhandled exception, app crashes
+    //Test2(); // Lost exception
 }
 catch (Exception)
 {
