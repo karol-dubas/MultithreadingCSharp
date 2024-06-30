@@ -8,6 +8,8 @@ var safeAccount = new SafeAccount(0);
 var depositTasks = new List<Task>();
 var withdrawalTasks = new List<Task>();
 
+// Start unsafe account balance test:
+
 for (int i = 0; i < runs; i++)
     depositTasks.Add(Task.Run(() => Deposit(unsafeAccount)));
 
@@ -23,6 +25,8 @@ Console.WriteLine($"Unsafe balance: {unsafeAccount.Balance}");
 depositTasks.Clear();
 withdrawalTasks.Clear();
 Console.WriteLine();
+
+// Start safe account balance test:
 
 for (int i = 0; i < runs; i++)
     depositTasks.Add(Task.Run(() => Deposit(safeAccount)));
