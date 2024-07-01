@@ -1,4 +1,4 @@
-================================================================================================
+============================================================================================
 
 # 2.4 - Introducing async and await
 
@@ -544,7 +544,7 @@ await Task.WhenAll(loadingTasks);
     it only affects the continuation in the method that you are operating in.
   - No code after `ConfigureAwait(false)` should require the original context.
   - `ConfigureAwait(false)` means, that there is no continuation enqueue on a thread pool.
-    It's quicker than waiting for another thread to be available.
+    It skips `SynchronizationContext` and it's quicker than waiting for another thread to be available.
 
 ```cs
 private async Task Method1()
@@ -1052,7 +1052,7 @@ Completed 1
 Completed 2
 ```
 
-================================================================================================
+============================================================================================
 
 # Asynchronous, parallel, concurrent programming
 
@@ -1397,7 +1397,7 @@ Async operation completed
 async result
 ```
 
-================================================================================================
+============================================================================================
 
 # Basics
 
@@ -1525,7 +1525,7 @@ Keyword `await` can be used on any *awaitable* type, which can be created by imp
 
 TODO: own awaitable type
 
-================================================================================================
+============================================================================================
 
 # Semaphore
 
@@ -1572,7 +1572,7 @@ Result:
 
 - Multiple things performing work on the same shared resource
 
-================================================================================================
+============================================================================================
 
 # Questions / TODO
 
@@ -1729,7 +1729,4 @@ await foreach (var stock in enumerator) {}
 
 1. Locking with `lock` etc.
 
-================================================================================================
-
-[Filip Ekberg, Asynchronous Programming in C#](https://www.pluralsight.com/courses/c-sharp-10-asynchronous-programming)  
-[DevMentors D. Pawlukiewicz, async/await (PL)](https://youtu.be/sCUFQ_VQszs)
+============================================================================================
