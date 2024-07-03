@@ -1693,7 +1693,7 @@ void Search_Click(...)
 ```cs
 using var cts = new CancellationTokenSource();
 
-// Is thread pool involved here? How does it wokrk? Is it a different thread?
+// Is thread pool involved here? How does it work? Is it a different thread?
 var backgroundTask = StartBackgroundService(cts.Token);
 
 // ...
@@ -1701,7 +1701,7 @@ var backgroundTask = StartBackgroundService(cts.Token);
 cts.Cancel();
 
 // And what is the task status before and after this?
-// App can't close propetly without this, why is that?
+// App can't close properly without this, why is that?
 await backgroundTask;
 
 async Task StartBackgroundService(CancellationToken ct)
@@ -1710,7 +1710,7 @@ async Task StartBackgroundService(CancellationToken ct)
     {
         while (!ct.IsCancellationRequested) { /* ... */ }
     }
-    catch (TaskCanceledException) { }
+    catch (TaskCanceledException) { } // Is this catch needed? (ct doesn't throw)
 }
 ```
 
@@ -1720,13 +1720,6 @@ async Task StartBackgroundService(CancellationToken ct)
 await foreach (var stock in enumerator) {}
 ```
 
-1. `Thread.Sleep` vs `Task.Delay`
-
-`Thread.Sleep` - synchronus?
-`Task.Delay` - asynchronous?
-
 1. `Task.Yield`
-
-1. Locking with `lock` etc.
 
 ============================================================================================
