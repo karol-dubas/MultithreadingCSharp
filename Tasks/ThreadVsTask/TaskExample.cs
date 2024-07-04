@@ -1,4 +1,4 @@
-namespace ThreadTask;
+namespace ThreadVsTask;
 
 public class TaskExample
 {

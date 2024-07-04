@@ -25,7 +25,7 @@ thread.PrintBasicInfo();
 // Join method can be used to wait synchronously for Thread completion.
 //thread.Join();
 
-// Or polling
+// Or use polling
 while (!threadCompleted)
 {
     Console.WriteLine($"Polling '{thread.Name}'...");

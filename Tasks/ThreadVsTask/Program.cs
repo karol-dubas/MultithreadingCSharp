@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using ThreadTask;
+using ThreadVsTask;
 
 // In modern .NET tasks are used instead of threads directly, but it may cause problems.
 

@@ -12,7 +12,6 @@ while (true)
     {
         Console.WriteLine(task.Status);
         break;
-        
     }
     
     Thread.Sleep(1);

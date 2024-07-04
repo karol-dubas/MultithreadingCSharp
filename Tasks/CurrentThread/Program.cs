@@ -1,6 +1,4 @@
-﻿Console.WriteLine($"Number of logical threads: {Environment.ProcessorCount}");
-
-Console.WriteLine("[1] Thread:" + Environment.CurrentManagedThreadId);
+﻿Console.WriteLine("[1] Thread:" + Environment.CurrentManagedThreadId);
 
 Task.Run(() =>
 {

@@ -2,11 +2,11 @@
 {
     public static void Main()
     {
-        TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
+        TaskScheduler.UnobservedTaskException += (_, eventArgs) =>
         {
             eventArgs.Exception.Handle(ex =>
             {
-                Console.WriteLine("UnobservedTaskExceptiontype: {0}", ex.GetType());
+                Console.WriteLine("UnobservedTaskExceptionType: {0}", ex.GetType());
                 return true;
             });
             eventArgs.SetObserved();
