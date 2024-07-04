@@ -15,6 +15,7 @@ thread.Join(); // Block main thread and wait
 Console.WriteLine();
 Console.WriteLine("ThreadPool Thread:");
 
+// Threads in a ThreadPool are created on-demand, when the app needs them.
 // ThreadPool optimizes operations on threads by reusing, recycling them etc.
 // enhancing multithreading performance.
 ThreadPool.QueueUserWorkItem(_ =>
