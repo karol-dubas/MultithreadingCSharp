@@ -189,7 +189,7 @@ await getStocksTask; // Execute this code
 - Asynchronous ASP.NET relieves web server of work and it can take care of other requests while asynchronous
   operations are running
 - `.Result` or `Wait` on `Task` variable will block a thread.
-  Execution will run synchronously, it may even deadlock whole application
+  Execution will run synchronously, it may even deadlock whole application (if app has `SynchronizationContext`)
 - Using `.Result` in the continuation is fine
 
   ```cs
@@ -1722,4 +1722,5 @@ await foreach (var stock in enumerator) {}
 
 1. `Task.Yield`
 
+1. `ValueTask`
 ============================================================================================

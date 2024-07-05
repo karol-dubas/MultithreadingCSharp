@@ -4,6 +4,7 @@ Console.WriteLine($"End 1: {Environment.CurrentManagedThreadId}");
 Console.ReadKey(false);
 
 // TODO: no await version (compare thread ids)
+// TODO: difference between starting background operation with `Task.Run(Test)` vs `Test()`
 
 // Console.WriteLine($"Start 2: {Environment.CurrentManagedThreadId}");
 // Task.Run(Test);
@@ -18,7 +19,7 @@ async Task Test(int param = 1)
     Console.WriteLine($"Before: {Environment.CurrentManagedThreadId}");
     await Task.Delay(1_000); // Task is returned and this runs in parallel on another thread
     
-    // It depends on SynchronizationContext, console & ASP.NET Core apps don't have it, WPF has 
+    // It depends on SynchronizationContext. Console & ASP.NET Core apps don't have it, WPF has 
     //var sc = SynchronizationContext.Current;
     
     Console.WriteLine($"After: {Environment.CurrentManagedThreadId}"); // TODO: different thread
