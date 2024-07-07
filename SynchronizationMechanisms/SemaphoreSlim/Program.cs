@@ -1,4 +1,9 @@
-﻿var semaphore = new SemaphoreSlim(1);
+﻿// Semaphores manage access to shared resources,
+// allows access only for a specified number of threads to enter and execute code block.
+// It solves synchronization problems between threads, like race conditions.
+// `Semaphore` is legacy one, `SemaphoreSlim` is a newer implementation.
+
+var semaphore = new SemaphoreSlim(1);
 
 for (int i = 0; i < 3; i++)
 {

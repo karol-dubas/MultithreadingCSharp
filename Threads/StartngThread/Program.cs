@@ -12,7 +12,7 @@ var thread = new Thread(() =>
 
 thread.Name = "My Thread 1";
 
-// Application closes once all non-background threads end.
+// The application closes once all non-background threads end.
 // Terminate after the end of the main thread, don't wait for this thread.
 //thread1.IsBackground = true;
 

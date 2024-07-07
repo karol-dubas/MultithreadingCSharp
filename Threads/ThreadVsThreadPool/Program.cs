@@ -18,20 +18,26 @@ thread.Join(); // Block main thread and wait
 Console.WriteLine();
 Console.WriteLine("ThreadPool Thread:");
 
+// parallelism
+
 // Threads in a ThreadPool are created on-demand, when the app needs them.
-// ThreadPool optimizes operations on threads by reusing, recycling them etc.
-// enhancing multithreading performance.
-bool finished = false;
+// ThreadPool optimizes operations on threads by reusing, recycling them, distributes work evenly, etc.
+// enhancing multithreading performance and leading to efficient use of system resources.
+bool tpThreadFinished = false;
 ThreadPool.QueueUserWorkItem(_ =>
 {
     Console.WriteLine($"Thread {Environment.CurrentManagedThreadId} started");
     Thread.CurrentThread.PrintBasicInfo();
     Thread.Sleep(500);
     Console.WriteLine($"Thread {Environment.CurrentManagedThreadId} finished");
-    finished = true;
+    tpThreadFinished = true;
 });
 
-while (!finished) { }
+while (!tpThreadFinished) { }
+
+// Types of threads:
+//   - Worker Threads
+//   - I/O completion port thread
 
 ThreadPool.GetMinThreads(out int minWorkerThreads, out int minCompletionPortThreads);
 ThreadPool.GetMaxThreads(out int maxWorkerThreads, out int maxCompletionPortThreads);

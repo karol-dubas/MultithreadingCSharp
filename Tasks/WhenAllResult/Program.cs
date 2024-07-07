@@ -17,10 +17,10 @@ int[] results = await Task.WhenAll(fooTask, barTask); // Result array is returne
 Console.WriteLine(fooTask.IsCompleted); // True
 Console.WriteLine(sw.ElapsedMilliseconds); // ~1000ms elapsed
 
-int result = results.Sum(); // Getting data with array
+int result = results.Sum(); // Getting data with an array
 
 // Alternative with Task.Result.
-// It was awaited, so Task is completed and it's safe to use Task.Result
+// It was awaited, so the Task is completed, and it's safe to use Task.Result
 int resultAlt = fooTask.Result + barTask.Result;
 
 Console.WriteLine();

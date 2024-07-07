@@ -1,10 +1,15 @@
 ﻿using System.Runtime.CompilerServices;
 
-string value = await GetAsync(); // start async state machine
+// Start async state machine.
+// After receiving a Task object, it looks as if the method is not executed from the beginning,
+// but somewhere in the middle of the method (after `await`).
+string value = await GetAsync();
+
 Console.WriteLine(value);
 
-// Every async method will look like this, only different method builders are used
-Task<string> GetAsync() // no async
+// Every async method will look like this, only different method builders are used.
+// Keywords `async` and `await` are just a syntax sugar, they don't exist in low level C#/IL compiled code.
+Task<string> GetAsync()
 {
     var stateMachine = new StateMachine
     {
@@ -32,8 +37,8 @@ internal struct StateMachine : IAsyncStateMachine
             {
                 Console.WriteLine("Starting async operation...");
 
-                // No await here, GetAwaiter returns TaskAwaiter, which awaits result of this asynchronous operation.
-                // When it returns a value TaskAwaiter<T> is used instead.
+                // await = GetAwaiter, which returns TaskAwaiter, and awaits a result of this asynchronous operation.
+                // When it returns a value, generic TaskAwaiter<T> is used instead.
                 _taskAwaiter = Task.Delay(3_000).GetAwaiter();
 
                 if (_taskAwaiter.IsCompleted) // lucky check
@@ -43,11 +48,11 @@ internal struct StateMachine : IAsyncStateMachine
                 }
                 else
                 {
-                    State = 0; // next time it enters MoveNext method it will instantly take a result
+                    State = 0; // next time it enters MoveNext method, it will instantly take a result
 
                     // Schedule state machine to execute when async operation is completed.
-                    // It saves the state machine's state (stack -> heap) and returns control to the caller.
-                    // Task Scheduler and OS is involved to resume code execution when result is available.
+                    // It saves the machine's state (stack -> heap) and returns control to the caller.
+                    // Task Scheduler and OS are involved to resume code execution when a result is available.
                     MethodBuilder.AwaitUnsafeOnCompleted(ref _taskAwaiter, ref this);
                     Console.WriteLine("State machine state moved to heap");
                     return; // state saved, leave and wait for a result

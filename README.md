@@ -1,40 +1,134 @@
-============================================================================================
+# Multithreading
 
-# 2.4 - Introducing async and await
+- Program is run in a thread (main thread)
+- Hyper-Threading/SMT allows CPU core to handle both threads at the same time
+- CPU thread priorities are managed by OS, but it can be configured
+- Program performance using multiple threads depends on what hardware it is running on.
+
+![Concurrency vs Parallelism](assets/Concurrency_Parallelism.png)
+
+## Concurrent programming
+
+Concurrent programming made it possible to solve the problem of multitasking when the first OS were created, even with only 1 CPU core.
+During concurrent programming, there is a context switching, that is imperceptible to humans (looks like parallelism).
 
 ## Asynchronous programming
 
-### Overview
-- `async` & `await` keywords
-- Suitable for I/O operations
-- Asynchronous operations occurs in parallel, but it subscribes to when that operation completes
-- `Task` represents asynchronous operation
-- `await` waits for the operation to be completed, then continues execution.
-  Pauses execution of the method until a result is available, without blocking the calling thread
-- When debugging `await` call, while waiting for response control is returned to the calling thread (e.g. UI)
+Solves the problem of blocking threads (not concurrency or parallelism).
 
-### Usage examples:
-- network resources
-- disk write & read
-- memory
-- database
+Used for I/O operations that are beyond the scope of the application and require processing time in an external program:
+  - network resources
+  - disk write & read
+  - memory
+  - database
+  
+After calling an I/O operation, we can wait for the result:
+- synchronously, blocking the resources until the result is returned
+- asynchronously, which doesn't block the resources
 
-## Parrarel Programming
-- Task Parrarel Library (TPL)
-- Suitable for CPU bound operations
+Debugging doesn't stop asynchronous operations.
+
+### Synchronous (blocking) web server example
+
+Synchronous web application with 1 CPU core during the request execution starts a new thread, if it performs synchronous operation, it will block the application.
+If application is used by more than 1 user, concurrent programming with context switching is used to handle such requests (1 CPU core).
+Web server has a thread pool with limited number of threads (that handle requests). By default, it's `(CPU physical core number) x (number of threads that can be run on each core)`, so if the CPU has 6 cores and 2 threads on each, there will be 12 threads in the thread pool available to use. When the number of available threads is exceeded, a thread throttling mechanism kicks in.
+The synchronous approach makes the thread in such an approach wait most of the time for the result and during this time it could perform other operations.
+
+![alt text](assets/image-1.png)
+
+```cs
+app.MapGet("/sync", () =>
+{
+    Thread.Sleep(1000); // It waits most of the time, blocking the thread
+    return "Hello";
+});
+```
+
+Result is returned after 1s and thread handling that request is blocked.
+
+Load test results:
+
+```
+API sync load test scenario (5s timeout)
+    - requests: 188
+    - ok:       76      (p50 = 3022.85 ms, p75 = 3039.23 ms, p95 = 3993.6 ms, p99 = 4583.42 ms)
+    - fail:     112     (min > 5s)
+```
+
+### Asynchronous web server example
+
+Asynchronous programming can be implemented on 1 thread, it doesn't require more than 1 core or 1 thread, but it's welcomed to use multiple threads.
+
+In the asynchronous version as in the synchronous version - one thread is taken from the **ThreadPool** to handle the request, but instead of blocking the thread, while waiting for the result, it is returned to the thread pool, and it can be reused by another request. After receiving the result continuation doesn't have to take place on the same thread on which it was started, **ThreadPool** can allocate another thread. Storing context execution is needed to continue code execution properly.
+
+![alt text](assets/image-2.png)
+
+
+```cs
+app.MapGet("/async", async () =>
+{
+    // Doesn't block the thread, it's returned to the ThreadPool while waiting for the result
+    await Task.Delay(1000);
+    return "Hello";
+});
+```
+
+Result is still returned after 1s, but it doesn't block the thread, so thread can be reused in another request. This means that more requests can be handled this way. 
+
+Load test results:
+
+```
+API async load test scenario (5s timeout)
+    - requests: 109497
+    - ok:       109430  (p50 = 1218.56 ms, p75 = 1296.38 ms, p95 = 1704.96 ms, p99 = 1797.12 ms)
+    - fail:     67      (min > 5s)
+```
+
+Asynchronous operations occurs in parallel, but it subscribes to when that operation completes.  
+
+### C# asynchronous patterns history
+
+- APM - Asynchronous Programming Model
+- EAP - Event-based Asynchronous Pattern
+- TAP - Task-based Asynchronous Programming (current)
+
+### `async`
+Allows to use `await` keyword and spawns a **state machine**
+
+### `await`
+- Pauses execution of the method until a result is available, without blocking the calling thread. 
+- Waits for the operation to be completed, then continues execution
+- Guarantees that the code after it won't be executed until the asynchronous operation is completed
+- Retrieves result when available, unwraping `Task<T>` result
+- Makes sure that there were no exceptions with awaited task or re-throws exceptions that occured inside the `Task`, if task failed
+- Introduces continuation that allows to get back to the original context (thread). Code after `await` will run once task has completed, and it will run on the same thread that spawned asynchronous operation
+- Keyword `await` can be used on any *awaitable* type, which can be created by implementing `GetAwaiter` method
+
+### `Task`
+- Is a representation of asynchronous operation that can return a result
+- Object returned from an asynchronous method is a reference to operation/result/error
+
+## ASP.NET synchronization context
+
+In ASP.NET Core `SynchronizationContext` was removed so using `Task.ConfigureAwait(false)` doesn't work, but it works in other/older .NET applications.
+
+## Parallel Programming
+- Used in the CPU bound scenarios to maximize performance.
 - Split and solve small pieces independently, use as much computer resources as possible
+- CPU cores can perform operations independently, so with their use we can program in parallel
 - Allows for both asynchronous and parallel programming
+
+# Race conditions
+
+Occurs when multiple things performing work on the same shared resource. It can be solved with thread synchronization mechanisms.
+
+--------------------------------------------------------------------------------------
 
 # 2.5 - Understanding a continuation
 
 - Asynchronous operations introduce separate threads where the work is being done
-- `Task` represents asynchronous operation
 - `await` keyword:
-  - Retrieves result when available
-  - Makes sure that there were no exceptions with awaited task
-  - Introduces continuation that allows to get back to the original context (thread). 
-    Code after `await` will run once task has completed and it will run on the same thread that spawned asynchronous operation
-  - Re-throws exceptions that occured inside the `Task`, if task failed
 
   ```cs
   async void Search_Click(...)
@@ -78,33 +172,10 @@
 
 - `async` keyword allows for using `await` keyword
 - `async void` should be used only for event handlers
-- `Task` represents an asynchoronous operation
+- `Task` represents an asynchronous operation
 - `async Task` method automatically returns `Task`, without explicit `return`. Compiler does it for us.
-  
-  ```cs
-  public class Class 
-  {
-      public async Task Method() { }
-  }
-  ```
 
-  is compiled to:
-
-  ```cs
-  // Other generated code...
-
-  public Task Method()
-  {
-      <Method>d__0 stateMachine = new <Method>d__0();
-      stateMachine.<>t__builder = AsyncTaskMethodBuilder.Create();
-      stateMachine.<>4__this = this;
-      stateMachine.<>1__state = -1;
-      stateMachine.<>t__builder.Start(ref stateMachine);
-      return stateMachine.<>t__builder.Task;
-  }
-  ```
-
-- `Task` object returned from an asynchronous method is a reference to operation/result/error
+- `Task` 
   
 ```cs
 var getStocksTask = GetStocks(); // Create separate thread, with the code to execute
@@ -118,7 +189,7 @@ await getStocksTask; // Execute this code
 ## Missing await
 
 - Re-throwing exceptions sets the `Task` to faulted with an exception
-- Without `await`, exception isn't re-throwed
+- Without `await`, exception isn't re-thrown
   
   ```cs
   async void Search_Click(...)
@@ -186,7 +257,7 @@ await getStocksTask; // Execute this code
 
 # 2.8 - Best practices
 
-- Asynchronous ASP.NET relieves web server of work and it can take care of other requests while asynchronous
+- Asynchronous ASP.NET relieves web server of work, and it can take care of other requests while asynchronous
   operations are running
 - `.Result` or `Wait` on `Task` variable will block a thread.
   Execution will run synchronously, it may even deadlock whole application (if app has `SynchronizationContext`)
@@ -240,7 +311,7 @@ var data = await Task.Run(() =>
 
 # 3.2 - Creating async operation with Task
 
-- When not awaiting `Task.Run`, the task scheduler will queue this to the thread pool
+- When not awaiting `Task.Run`, the task scheduler will queue this to the thread pool,
   and it will execute that whenever there is an available thread.
   This call will complete immediately and code execution will continue (no await)
 
@@ -275,7 +346,7 @@ void Search_Click(...)
     }
 }
 ```
-- `async` & `await` is easier to read, has less code and is less error prone
+- `async` & `await` is easier to read, has less code and is less error-prone
 
 # 3.4 - Nested asynchronous operations
 
@@ -396,7 +467,7 @@ task.ContinueWith(t => {
 });
 ```
 
-- To cancel own long running task we can use `CancellationToken.IsCancellationRequested`:
+- To cancel own long-running task we can use `CancellationToken.IsCancellationRequested`:
   
 ```cs
 Task.Run(() =>
@@ -417,7 +488,7 @@ cts.Token.Register(() => Notes.Text = "Cancellation requested");
 # 3.7 - HTTP Client cancellation
 
 - Canceling defined asynchronous methods might be different.
-  Sometimes it might return partial data and sometimes it throws `TaskCanceledException` to let know that it was canceled
+  Sometimes it might return partial data, and sometimes it throws `TaskCanceledException` to let know that it was canceled
 
 ```cs
 using var httpClient = new HttpClient();
@@ -505,7 +576,7 @@ await Method(); // completes immediately
 - Methods `Task.FromResult`, `Task.FromCanceled`, `Task.FromException` can be used like `Task.CompletedTask`, but with a return value. 
 - `Task.FromResult` creates a `Task` which is marked as completed with the specified result, so it's just a `Task` result wrapper
 
-# 4.4. Process Tasks as They Complete
+# 4.4 - Process Tasks as They Complete
 
 - Standard .NET collections aren't thread-safe.
   Thread-safe collections should be used when working with collections on multiple threads
@@ -533,7 +604,7 @@ foreach (string id in ids)
 await Task.WhenAll(loadingTasks);
 ```
 
-# 4.5. Execution Context and Controlling the Continuation
+# 4.5 - Execution Context and Controlling the Continuation
 
 - For reasons like performance or context switching, there isn't always a need to return to the original context,
   when running the code in the continuations
@@ -564,12 +635,12 @@ private async Task Method2()
 }
 ```
 
-# 4.6. ConfigureAwait in ASP.NET
+# 4.6 - ConfigureAwait in ASP.NET
 
 - ASP.NET Core doesn't use synchronization context, thus making `ConfigureAwait(false)` is useless
 - `ConfigureAwait(false)` should be used in libraries, because the library can be used by any type of application
 
-# 5.2. Asynchronous Streams and Disposables
+# 5.2 - Asynchronous Streams and Disposables
 
 - `IAsyncEnumerable<T>`:
   - Allows for asynchronous retrieval of each item as it arrives to the application
@@ -620,7 +691,7 @@ public class StockStreamService : IAsyncDisposable
 await using var service = new StockStreamService();
 ```
 
-# 5.3. The Implications of Async and Await
+# 5.3 - The Implications of Async and Await
 
 - Using `async` keyword generates a bit of code and introduces a state machine
 - State machine is generated for every `async` method
@@ -628,7 +699,7 @@ await using var service = new StockStreamService();
   - Keeping track of tasks
   - Executes the continuation
   - Provides potential result
-  - Handles context switching - ensures that the contination executes on the correct context
+  - Handles context switching - ensures that the continuation executes on the correct context
   - Handles exceptions
 
 - Not `async` method:
@@ -797,7 +868,7 @@ private sealed class <Foo>d__6 : IAsyncStateMachine
 
 Now state machine keeps track of the current state and has an awaiter to keep track of current ongoing operations, to know if it's completed
 
-# 5.4. Reducing the Amount of State Machines
+# 5.4 - Reducing the Amount of State Machines
 
 All the methods using `await` and `async` keywords validate that the method it's calling completed successfully.
 Methods below are waiting for a result, and this means that each of them will have a generated state machine code.
@@ -820,7 +891,7 @@ private async Task<string> Method3()
 ```
 
 There is no continuation in these methods, so to keep amount of generated code to a minimum, we can skip `async` & `await`. 
-If the caller has the opportunity to await `Task`, then is should do so. Asynchronous operation should be awaited at the top level. It also reduces potential errors.
+If the caller has the opportunity to await `Task`, then it should do so. Asynchronous operation should be awaited at the top level. It also reduces potential errors.
 
 ```cs
 private async Task<string> Method1()
@@ -893,13 +964,13 @@ private async Task<IEnumerable<StockPrice>> LoadStocks()
 The state machine with the code inside runs on the same thread (UI in this case) and it can't be executed, because this thread is blocked.
 Asynchronous operation can't communicate to the state machine when it completes.
 
-# 6.2. Report on the Progress of a Task
+# 6.2 - Report on the Progress of a Task
 
 `Progress<T>` provides `IProgress<T>` that invokes callbacks for each reported value with `IProgress<T>.Report`.
 `Progress<T>.ProgressChanged` event is raised every report on the calling context.
 Passing `Progress<T>` object to another thread will use synchronization context, like awaiter when communicating back to the original context.
 
-# 6.3. Using Task Completion Source
+# 6.3 - Using Task Completion Source
 
 In C#, there are several options for performing parallel operations. The latest one is the TAP approach.
 
@@ -940,13 +1011,13 @@ ThreadPool.QueueUserWorkItem(_ =>
 ## TaskCompletionSource
 
 - Used for old, legacy code to create awaitable `Task`
-- `TaskCompletionSource<T>` is for consuming a parallel or async operations different than TAP approach,
+- `TaskCompletionSource<T>` is for consuming a parallel or async operations different from TAP approach,
   where `Task` isn't exposed, so no `async` & `await` keywords can be used
 - Creates a `Task` which could be returned or awaited
-- `TaskCompletionSource<T>.Task` doens't run anything itself,
+- `TaskCompletionSource<T>.Task` doesn't run anything itself,
   it is marked as completed when it gets the result set on it, so it means it can be awaited
 
-# 6.4. Working with Attached and Detached Tasks
+# 6.4 - Working with Attached and Detached Tasks
 
 ```cs
 Task.Run(() => // parent task
@@ -1052,675 +1123,159 @@ Completed 1
 Completed 2
 ```
 
-============================================================================================
-
-# Asynchronous, parallel, concurrent programming
-
-## Concurrent
-
-Concurrent programming made it possible to solve the problem of multitasking when the first OS were created, even with only 1 CPU core.
-During concurrent programming, there is a context switching, that is imperceptible to humans (looks like parallelism).
-
-## Parallel
-
-CPU cores can perform operations independently, so with their use we can program in parallel.
-Used in the CPU bound scenarios to maximize performance.
-
-![Concurrency vs Parallelism](assets/image.png)
-
-Both approaches can be used at the same time.
-
-## Asynchronous
-
-Used for I/O operations that are beyond the scope of the application and require processing time in an external program.
-After calling an I/O operation, we can wait for the result
-- synchronously, blocking the resources until the result is returned
-- asynchronously, which doesn't block the resources.
-
-# C# asynchronous patterns history
-
-APM - Asynchronous Programming Model
-EAP - Event-based Asynchronous Pattern
-TAP - Task-based Asynchronous Programming
-
-# Synchronous (blocking) web server example
-
-Synchronous web application with 1 CPU core during the request execution starts a new thread, if it performs synchronous operation, it will block the application.
-If application is used by more than 1 user, concurrent programming with context switching is used to handle such requests (1 CPU core).
-Web server has a thread pool with limited number of threads (that handle requests). By default it's `(CPU physical core number) x (number of threads that can be run on each core)`, so if the CPU has 6 cores and 2 threads on each, there will be 12 threads in the thread pool available to use. When the number of available threads is exceeded, a thread throttling mechanism kicks in.
-The synchronous approach makes the thread in such an approach wait most of the time for the result and during this time it could perform other operations.
-
-![alt text](assets/image-1.png)
-
-```cs
-app.MapGet("/sync", () =>
-{
-    Thread.Sleep(1000); // It waits most of the time, blocking the thread
-    return "Hello";
-});
-```
-
-Result is returned after 1s and thread handling that request is blocked.
-
-Load test results:
-
-```
-API sync load test scenario (5s timeout)
-    - requests: 188
-    - ok:       76      (p50 = 3022.85 ms, p75 = 3039.23 ms, p95 = 3993.6 ms, p99 = 4583.42 ms)
-    - fail:     112     (min > 5s)
-```
-
-# Asynchronous web server example
-
-Asynchronous programming can be impltemented on 1 thread, it doesn't require more than 1 core or 1 thread, but it's welcomed to use muliple threads.
-
-In the asynchronous version as in the synchronous version - one thread is taken from the thread pool to handle the request, but instead of blocking the thread, while waiting for the result, it is returned to the thread pool and it can be resued by another request. After receiving the result continuation doens't have to take place on the same thread on which it was started, Thread Pool can allocate another thread. Storing context execution is needed to continue code execution properly.
-
-![alt text](assets/image-2.png)
-
-`Task` is a representation of asynchronous operation that can return a result
-
-```cs
-app.MapGet("/async", async () =>
-{
-    // Doesn't block the thread, it's returned to the Thread Pool while waiting for the result
-    await Task.Delay(1000);
-    return "Hello";
-});
-```
-
-Result is still returned after 1s, but it doesn't block the thread, so thread can be reused in another request. This means that more requests can be handled this way. 
-
-Load test results:
-
-```
-API async load test scenario (5s timeout)
-    - requests: 109497
-    - ok:       109430  (p50 = 1218.56 ms, p75 = 1296.38 ms, p95 = 1704.96 ms, p99 = 1797.12 ms)
-    - fail:     67      (min > 5s)
-```
-
-# Awaiting results
-
-Debugging doesn't stop asynchronous operations.
-
-The `await` keyword:
-  - Guarantees that the code after it won't be executed until the asynchronous operation is completed
-  - Unwraps `Task<T>` result
-  
-Skipping the `await` async operation will execute it in the background (fire and forget).
-
-```cs
-// ~0ms elapsed
-var delayTask = Task.Delay(1500); // Run task and continue code execution (no await)
-// ~0ms elapsed
-await Task.Delay(500); // Awaiting a task, code execution won't continue
-// ~500ms elapsed
-await delayTask; // Await first delay, but 500ms already elapsed, so awaiting will last 1000ms
-// ~1500ms elapsed (500ms + 1000ms)
-```
-
-Below is similar example, but illustrating how `await` returns the control to caller (non-blocking).
-
-```cs
-var repo = new Repository();
-
-var fooTask = repo.GetFooAsync(); // No await, continue
-int barResult = await repo.GetBarAsync(); // Return control to the caller
-int fooResult = await fooTask; // Return control to the caller
-
-return barResult + fooResult;
-
-class Repository
-{
-    public async Task<int> GetFooAsync()
-    {
-        // Return control to the caller (non-blocking),
-        // it will return here once async operation is finished
-        await Task.Delay(1000);
-        
-        return 1;
-    }
-    
-    public async Task<int> GetBarAsync()
-    {
-        await Task.Delay(500); // Return control to the caller
-        return 2;
-    }
-}
-```
-
-# Task.WhenAll
-
-```cs
-var repo = new Repository();
-
-var fooTask = repo.GetFooAsync();
-var barTask = repo.GetBarAsync();
-
-Console.WriteLine(fooTask.IsCompleted); // False
-
-// Blocking operation that waits for an asynchronous operation to finish (fooTask.IsCompleted == true)
-// it will run synchronously and may cause a deadlock
-// int fooResult = fooTask.Result;
-
-int[] results = await Task.WhenAll(fooTask, barTask); // Result array is returned
-// ~1000ms elapsed
-
-Console.WriteLine(fooTask.IsCompleted); // True
-
-int result = results.Sum(); // Getting data with array
-
-// Alternative with Task.Result.
-// It was awaited, so Task is completed and it's safe to use Task.Result
-int resultAlt = fooTask.Result + barTask.Result;
-
-Console.WriteLine();
-
-class Repository
-{
-    public async Task<int> GetFooAsync()
-    {
-        await Task.Delay(1000);
-        return 1;
-    }
-    
-    public async Task<int> GetBarAsync()
-    {
-        await Task.Delay(500);
-        return 2;
-    }
-}
-```
-
-# async void
-
-- `await` can be used only on `Task`, because it's a wrapper and a pointer to asynchronous operation
-- It's fire and forget, once it's started operation can't be managed
-
-```cs
-Console.WriteLine("Before");
-
-try
-{
-    Test();
-}
-catch (Exception)
-{
-    Console.WriteLine("Exception caught");
-}
-
-Console.WriteLine("After");
-Console.ReadKey();
-
-async void Test()
-{
-    await Task.Delay(100);
-    throw new Exception();
-}
-```
-
-An exception is thrown, but it's outside the `try catch` block.
-Result:
-
-```
-Before
-After
-Unhandled exception. System.Exception: Exception of type 'System.Exception' was thrown.
-   at Program.<<Main>$>g__Test|0_0() in C:\Users\...\Program.cs:line 18
-   ...
-```
-
-When signature is changed to Task, but call isn't awaited:
-
-```cs
-Console.WriteLine("Before");
-
-try
-{
-    Test(); // No await, exception lost
-}
-catch (Exception)
-{
-    Console.WriteLine("Exception caught");
-}
-
-Console.WriteLine("After");
-Console.ReadKey();
-
-async Task Test()
-{
-    await Task.Delay(100);
-    throw new Exception();
-}
-```
-
-An exception is still thrown, now `Task` object wraps & contains it, without `await` it's lost. but it doesn't crash te app
-Result:
-
-```
-Before
-After
-```
-# Own async state machine
-
-When returning control to the caller with `await`, the context in which the operation will be resumed after receiving the result is stored.
-In practice after receiving a result, it looks as if the method is executed not from the beginning, but for example somewhere in the middle of the method (after `await`).
-Keywords `async` and `await` are just a syntax sugar, they don't exist in low level C#/IL compiled code.
-
-```cs
-string value = await GetAsync(); // start async state machine
-Console.WriteLine(value);
-
-// Every async method will look like this, only different method builders are used
-Task<string> GetAsync() // no async
-{
-    var stateMachine = new StateMachine
-    {
-        State = -1, // initial state
-        MethodBuilder = AsyncTaskMethodBuilder<string>.Create()
-    };
-    
-    stateMachine.MethodBuilder.Start(ref stateMachine); // calls StateMachine.MoveNext
-    return stateMachine.MethodBuilder.Task; // Task.Status = WaitingForActivation
-}
-
-// struct only in Release mode, in Debug it's a sealed class
-internal struct StateMachine : IAsyncStateMachine
-{
-    public int State;
-    public AsyncTaskMethodBuilder<string> MethodBuilder;
-    
-    private TaskAwaiter _taskAwaiter;
-    
-    void IAsyncStateMachine.MoveNext()
-    {
-        try
-        {
-            if (State == -1) // not started yet
-            {
-                Console.WriteLine("Starting async operation...");
-
-                // No await here, GetAwaiter returns TaskAwaiter, which awaits result of this asynchronous operation.
-                // When it returns a value TaskAwaiter<T> is used instead.
-                _taskAwaiter = Task.Delay(3_000).GetAwaiter();
-
-                if (_taskAwaiter.IsCompleted) // lucky check
-                {
-                    Console.WriteLine("Async operation completed immediately");
-                    State = 0;
-                }
-                else
-                {
-                    State = 0; // next time it enters MoveNext method it will instantly take a result
-
-                    // Schedule state machine to execute when async operation is completed.
-                    // It saves the state machine's state (stack -> heap) and returns control to the caller.
-                    // Task Scheduler and OS is involved to resume code execution when result is available.
-                    MethodBuilder.AwaitUnsafeOnCompleted(ref _taskAwaiter, ref this);
-                    Console.WriteLine("State machine state moved to heap");
-                    return; // state saved, leave and wait for a result
-                }
-            }
-
-            if (State == 0) // task completion
-            {
-                // TaskAwaiter.GetResult is a blocking operation, like Task.Result, when async operation isn't completed.
-                // It returns void here, but it can return a generic type.
-                _taskAwaiter.GetResult();
-
-                Console.WriteLine("Async operation completed");
-                MethodBuilder.SetResult("async result");
-                State = -2; // finished
-            }
-        }
-        catch (Exception e)
-        {
-            MethodBuilder.SetException(e);
-            State = -2; // finished
-        }
-    }
-
-    void IAsyncStateMachine.SetStateMachine(IAsyncStateMachine stateMachine)
-    {
-        MethodBuilder.SetStateMachine(stateMachine); // associate builder with state machine
-    }
-}
-```
-
-Result:
-```
-Starting async operation...
-State machine state moved to heap
-Async operation completed
-async result
-```
-
-============================================================================================
-
-# Basics
-
-- Program is run in a thread (main thread)
-- Hyper-Threading/SMT allows CPU core to handle both threads at the same time
-
-TODO: process vs thread
-
-- CPU thread priorities are managed by OS
-  
-  ```cs
-  Process p = Process.GetCurrentProcess();
-  p.PriorityClass = ProcessPriorityClass.High;
-  
-  Thread t = Thread.CurrentThread;
-  t.Priority = ThreadPriority.Highest;
-  ```
-
-# Threads
-
-- Program performance using multiple threads depends on what hardware it is running on
-- `Thread` class is legacy and shouldn't be used directly
-- When *foreground threads* are running then app can't be closed, in contrast to *background threads* 
-
-# ThreadPool
-
-`ThreadPool` in C# manages threads, automates multithreading and allows developers to easily perform async operations.
-It works by reusing threads, dynamically adjusting to the load and distributes work evenly, leading to efficient use of system resources.
-
-Types of threads:
-  - Worker Threads
-  - I/O completion port thread
-
-  ```cs
-  ThreadPool.GetMinThreads(out int minWorkerThreads, out int minCompletionPortThreads);
-  ThreadPool.GetMaxThreads(out int maxWorkerThreads, out int maxCompletionPortThreads);
-  ThreadPool.GetAvailableThreads(out int avWorkerThreads, out int avCompletionPortThreads);
-  ThreadPool.QueueUserWorkItem(_ => Console.WriteLine("Hello from ThreadPool"));
-  ```
-
-# Task
-
-`Task` & `Task<T>` were created before `async` & `await`, but it was reused in `async` & `await` approach.
-
-# Task.Status
-
-```cs
-var task = new Task(() => { Thread.Sleep(10); });
-
-Console.WriteLine(task.Status);
-
-task.Start();
-
-while (true)
-{
-    Console.WriteLine(task.Status);
-
-    if (task.IsCompleted)
-    {
-        Console.WriteLine(task.Status);
-        break;
-        
-    }
-    
-    Thread.Sleep(1);
-}
-```
-
-Result:
-```
-Created
-WaitingToRun
-Running
-Running
-RanToCompletion
-```
-
-# Running Tasks
-
-```cs
-new Task(() => Console.WriteLine("Task.Start")).Start(); // Legacy
-
-await Task.Factory.StartNew(() => 
-    Console.WriteLine("Task.Factory.StartNew")); // Older, more extended Task.Run option, rarely used
-
-await Task.Run(() => Console.WriteLine("Task.Run")); // Currently used with async/await
-```
-
-Result:
-
-```
-Task.Start
-Task.Factory.StartNew
-Task.Run
-```
-
-# C# task eliding
-
-[Stephen Cleary, Eliding Async and Await](https://blog.stephencleary.com/2016/12/eliding-async-await.html)
-
-Dispose pitfall
-
-```cs
-public async Task<string> GetWithKeywordsAsync(string url)
-{
-    using (var client = new HttpClient())
-        return await client.GetStringAsync(url);
-}
-
-public Task<string> GetElidingKeywordsAsync(string url)
-{
-    // Returns a task, but client is disposed
-    using (var client = new HttpClient())
-        return client.GetStringAsync(url);
-}
-```
-
-# ASP.NET synchronization context
-
-In ASP.NET Core it was removed so using `Task.ConfigureAwait(false)` doesn't work, but it works in other/older .NET applications.
-
-# Awaitables
-
-Keyword `await` can be used on any *awaitable* type, which can be created by implementing `GetAwaiter` method.
-
-TODO: own awaitable type
-
-============================================================================================
-
-# Semaphore
-
-- Manages access to shared resources, allows access only for a specified number of threads/objects
-  - - Solves synchronization problem between threads like race conditions
-- `Semaphore` is legacy one, `SemaphoreSlim` is a newer implementation
-
-```cs
-var semaphore = new SemaphoreSlim(1);
-
-for (int i = 0; i < 3; i++)
-{
-    Console.WriteLine($"[{i}] Start");
-    var waitTask = semaphore.WaitAsync();
-
-    if (!waitTask.IsCompleted)
-        Console.WriteLine($"[{i}] Waiting for a semaphore release...");
-
-    await waitTask;
-    
-    Console.WriteLine($"[{i}] Allowed");
-    
-    Task.Run(async () =>
-    {
-        await Task.Delay(500);
-        semaphore.Release();
-    });
-}
-```
-
-Result:
-```
-[0] Start
-[0] Allowed
-[1] Start
-[1] Waiting for a semaphore release...
-[1] Allowed
-[2] Start
-[2] Waiting for a semaphore release...
-[2] Allowed
-```
-
-# Race condition
-
-- Multiple things performing work on the same shared resource
-
-============================================================================================
+--------------------------------------------------------------------------------------
 
 # Questions / TODO
 
 1. What is the difference?
-   
-```cs
-Task.Run(() => GetStocks());
-Task.Run(async () => await GetStocks());
+    
+    ```cs
+    Task.Run(() => GetStocks());
+    Task.Run(async () => await GetStocks());
 
-async Task GetStocks() { /* ... */ }
-```
+    async Task GetStocks() { /* ... */ }
+    ```
 
 1. When `Task.Run` is executed? What is the difference?
 
-```cs
-var loadLinesTask = SearchForStocks();
+    ```cs
+    var loadLinesTask = SearchForStocks();
 
-Task<List<string>> SearchForStocks()
-{
-    return Task.Run(async () =>
+    Task<List<string>> SearchForStocks()
     {
-        // ...
-        return lines;
-    });
-}
+        return Task.Run(async () =>
+        {
+            // ...
+            return lines;
+        });
+    }
 
-// ...
-
-await loadLinesTask;
-```
-
-vs
-
-```cs
-var loadLinesTask = await SearchForStocks();
-
-async Task<List<string>> SearchForStocks()
-{
-    return await Task.Run(async () =>
-    {
-        // ...
-        return lines;
-    });
-}
-```
-
-1. What is the point of that?
-   
-```cs
-async Task AsyncTaskMethod()
-{
-    await TaskMethod();
-}
-
-Task TaskMethod() // no async
-{
     // ...
-}
-```
+
+    await loadLinesTask;
+    ```
+
+    vs
+
+    ```cs
+    var loadLinesTask = await SearchForStocks();
+
+    async Task<List<string>> SearchForStocks()
+    {
+        return await Task.Run(async () =>
+        {
+            // ...
+            return lines;
+        });
+    }
+    ```
+
+    1. What is the point of that?
+    
+    ```cs
+    async Task AsyncTaskMethod()
+    {
+        await TaskMethod();
+    }
+
+    Task TaskMethod() // no async
+    {
+        // ...
+    }
+    ```
 
 1. Can I spawn too many threads and overflow a thread pool?
 
 1. When is the method executed? What if an exception is thrown?
 
-```cs
-void Search_Click(...)
-{
-    try
+    ```cs
+    void Search_Click(...)
     {
-        var loadLinesTask = Task.Run(() => File.ReadAllLines("StockPrices_Small.csv"));
-        var processStocksTask = loadLinesTask.ContinueWith(completedTask => { /* continuation */ });
+        try
+        {
+            var loadLinesTask = Task.Run(() => File.ReadAllLines("StockPrices_Small.csv"));
+            var processStocksTask = loadLinesTask.ContinueWith(completedTask => { /* continuation */ });
+        }
+        catch (Exception ex)
+        {
+            Notes.Text = ex.Message;
+        }
     }
-    catch (Exception ex)
-    {
-        Notes.Text = ex.Message;
-    }
-}
-```
+    ```
 
 1. Try different `ContinueWith` chain executions, `OnlyOnFaulted` etc.
 
 1. Multiple awaits and exception.
-   If `responseTask` throws an exception (on execution), then it will be re-throwed (await) and caught, but what about `getStocksTask`?
+   If `responseTask` throws an exception (on execution), then it will be re-thrown (await) and caught, but what about `getStocksTask`?
 
-  ```cs
-  async void Search_Click(...)
-  {
-      var getStocksTask = GetStocks();
-      await getStocksTask;
-      AfterLoadingStockData();
-  }
-  
-  async Task GetStocks()
-  {
-      try
-      {
-          var store = new DataStore();
-          Task responseTask = store.GetStockPrices();
-          Stocks.ItemsSource = await responseTask;
-      }
-      catch (Exception ex)
-      {
-          Notes.Text = ex.Message;
-      }
-  }
-  ```
+    ```cs
+    async void Search_Click(...)
+    {
+        var getStocksTask = GetStocks();
+        await getStocksTask;
+        AfterLoadingStockData();
+    }
+
+    async Task GetStocks()
+    {
+        try
+        {
+            var store = new DataStore();
+            Task responseTask = store.GetStockPrices();
+            Stocks.ItemsSource = await responseTask;
+        }
+        catch (Exception ex)
+        {
+            Notes.Text = ex.Message;
+        }
+    }
+    ```
 
 1. Check `CancellationTokenSource.Dispose`
 
 1. Standard .NET collections aren't thread-safe, try to break few and check what happens
 
-1. What happens if `Task.WhenAny` returns the first completed task and the next task throws an exception?
+1. What happens if `Task.WhenAny` returns the first completed task and the next task throws an exception or `Task.WhenALl`?
 
 1. Explore the benefits of `ConfigureAwait(false)`
 
 1. Is async method with no await started like Task.Run?
 
-```cs
-using var cts = new CancellationTokenSource();
+    ```cs
+    using var cts = new CancellationTokenSource();
 
-// Is thread pool involved here? How does it work? Is it a different thread?
-var backgroundTask = StartBackgroundService(cts.Token);
+    // Is thread pool involved here? How does it work? Is it a different thread?
+    var backgroundTask = StartBackgroundService(cts.Token);
 
-// ...
+    // ...
 
-cts.Cancel();
+    cts.Cancel();
 
-// And what is the task status before and after this?
-// App can't close properly without this, why is that?
-await backgroundTask;
+    // And what is the task status before and after this?
+    // App can't close properly without this, why is that?
+    await backgroundTask;
 
-async Task StartBackgroundService(CancellationToken ct)
-{
-    try
+    async Task StartBackgroundService(CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested) { /* ... */ }
+        try
+        {
+            while (!ct.IsCancellationRequested) { /* ... */ }
+        }
+        catch (TaskCanceledException) { } // Is this catch needed? (ct doesn't throw)
     }
-    catch (TaskCanceledException) { } // Is this catch needed? (ct doesn't throw)
-}
-```
+    ```
 
 1. Are all continuations running on the same new thread?
 
-```cs
-await foreach (var stock in enumerator) {}
-```
+    ```cs
+    await foreach (var stock in enumerator) {}
+    ```
 
 1. `Task.Yield`
 
 1. `ValueTask`
-============================================================================================
+
+1. Program, Process, Thread  
+    ![Program, Process, Thread](assets/Program_Process_Thread.png)
+
+1. Own awaitable type with `GetAwaiter`
