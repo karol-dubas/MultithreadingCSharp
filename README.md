@@ -100,7 +100,7 @@ Allows to use `await` keyword and spawns a **state machine**
 - Pauses execution of the method until a result is available, without blocking the calling thread. 
 - Waits for the operation to be completed, then continues execution
 - Guarantees that the code after it won't be executed until the asynchronous operation is completed
-- Retrieves result when available, unwraping `Task<T>` result
+- Retrieves result when available, unwrapping `Task<T>` result
 - Makes sure that there were no exceptions with awaited task or re-throws exceptions that occured inside the `Task`, if task failed
 - Introduces continuation that allows to get back to the original context (thread). Code after `await` will run once task has completed, and it will run on the same thread that spawned asynchronous operation
 - Keyword `await` can be used on any *awaitable* type, which can be created by implementing `GetAwaiter` method
@@ -170,7 +170,7 @@ Task task2 = Task.Run<T>(() => { return new T(); });
 ```cs
 // Offloading work on another thread.
 // It queues this anonymous method execution on the thread pool
-// and it shoud be executed immediately (assuming that thread pool isn't busy).
+// and it should be executed immediately (assuming that thread pool isn't busy).
 var data = await Task.Run(() =>
 {
     // ...
@@ -305,7 +305,7 @@ CancellationToken ct = cts.Token;
   
 ```cs
 cts.Cancel();
-var task = Task.Run(() => { }, ct); // won't start, doens't affect anonymous method
+var task = Task.Run(() => { }, ct); // won't start, doesn't affect anonymous method
 task.ContinueWith(t => { }, ct); // same logic applies here
 ```
 
@@ -436,7 +436,7 @@ TODO: `Task.WhenAll/WhenAny` exceptions
 public Task Method() // no async
 {
     return Task.CompletedTask;
-    // Everything completed successfuly, with no method signature change
+    // Everything completed successfully, with no method signature change
 }
 
 // Async implementation would be awaited
@@ -795,7 +795,7 @@ private void Search_Click(...)
     });
     
     // Wait = block UI thread until all processing has completed,
-    // but it can't completed, bacause it can't communicate back
+    // but it can't completed, because it can't communicate back
     task.Wait();
 }
 ```
@@ -1107,11 +1107,11 @@ Completed 2
 
 1. What happens if `Task.WhenAny` returns the first completed task and the next task throws an exception or `Task.WhenAll`?
 
-2. `Task.WhenAll` exceptions and `Parallel` [link](https://code-maze.com/csharp-execute-multiple-tasks-asynchronously/)
+1. `Task.WhenAll` exceptions and `Parallel` [link](https://code-maze.com/csharp-execute-multiple-tasks-asynchronously/)
 
-3. Explore the benefits of `ConfigureAwait(false)`
+1. Explore the benefits of `ConfigureAwait(false)`
 
-4. Is async method with no await started like Task.Run?
+1. Is async method with no await started like Task.Run?
 
     ```cs
     using var cts = new CancellationTokenSource();
@@ -1137,17 +1137,18 @@ Completed 2
     }
     ```
 
-5. Are all continuations running on the same new thread?
+1. Are all continuations running on the same new thread?
 
-    ```cs
+   ~~~~ ```cs
     await foreach (var stock in enumerator) {}
     ```
 
-6. `Task.Yield`
+1. `Task.Yield`
 
-7. `ValueTask`
+1. `ValueTask`
 
-8. Program, Process, Thread  
-    ![Program, Process, Thread](assets/Program_Process_Thread.png)
+1. Program, Process, Thread  
+   ![Program, Process, Thread](assets/Program_Process_Thread.png)  
+   [source](https://www.youtube.com/channel/UCZgt6AzoyjslHTC9dz0UoTw/community?lb=UgkxC7h3_WHiaeRFkHvbBzmlJudh-7q3W1Cj)
 
-9. Own awaitable type with `GetAwaiter`
+1. Own awaitable type with `GetAwaiter`
