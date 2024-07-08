@@ -125,136 +125,6 @@ Occurs when multiple things performing work on the same shared resource. It can 
 
 --------------------------------------------------------------------------------------
 
-# 2.5 - Understanding a continuation
-
-- Asynchronous operations introduce separate threads where the work is being done
-- `await` keyword:
-
-  ```cs
-  async void Search_Click(...)
-  {
-      var getStocksTask = GetStocks();
-      await getStocksTask; // async/await all the way up
-  
-      // Everything after await is a continuation
-  }
-  
-  async Task GetStocks()
-  {
-      try
-      {
-          var store = new DataStore();
-          Task responseTask = store.GetStockPrices();
-          Stocks.ItemsSource = await responseTask; // Spawns async operation
-      }
-      // If responseTask throws an exception (on execution), then it will be re-throwed (await) and caught here
-      catch (Exception ex)
-      {
-          Notes.Text = ex.Message;
-      }
-  }
-
-  // TODO: GetStockPrices signature
-  ```
-
-  - Can be used only with method that returns `Task`
-    
-    ```cs
-    async Task AsyncTaskMethod()
-    {
-        await TaskMethod();
-    }
-
-    Task TaskMethod() { ... } // No async
-    ```
-
-# 2.6 - Creating own async method
-
-- `async` keyword allows for using `await` keyword
-- `async void` should be used only for event handlers
-- `Task` represents an asynchronous operation
-- `async Task` method automatically returns `Task`, without explicit `return`. Compiler does it for us.
-
-- `Task` 
-  
-```cs
-var getStocksTask = GetStocks(); // Create separate thread, with the code to execute
-await getStocksTask; // Execute this code
-
-// TODO: GetStocks signature, is this true?
-```
-
-# 2.7 - Handling exceptions
-
-## Missing await
-
-- Re-throwing exceptions sets the `Task` to faulted with an exception
-- Without `await`, exception isn't re-thrown
-  
-  ```cs
-  async void Search_Click(...)
-  {
-      try
-      {
-          /*await*/ GetStocks();
-  
-          // Execution isn't awaited, so it continues before the call is completed
-          // and we have no idea what happened to this task
-      }
-      catch (Exception ex) // No await = no catch
-      {
-          Notes.Text = ex.Message;
-      }
-  }
-  
-  async Task GetStocks()
-  {
-      throw new Exception("I love exception mechanism <3");
-      // Task status is set to Faulted
-  }
-  ```
-
-## async void
-
-- If `async` method returns a `Task` then we can use all the additional info, e.g. exceptions
-  (`Task` is automatically returned, when method signature indicates it).
-  But when it returns `void` there is no additional info (and call can't be awaited)
-- It may crash the application when there is an unhandled exception. 
-  Exceptions occuring in `async void` can't be caught
-
-  ```cs
-  void Search_Click(...)
-  {
-      try
-      {
-          GetStocks();
-      }
-      catch (Exception ex)
-      {
-          Notes.Text = ex.Message;
-      }
-  }  
-
-  async void GetStocks() // async void method
-  {
-      try
-      {
-          // ...
-          Stocks.ItemsSource = await responseTask; // Exception thrown here
-      }
-      catch (Exception ex) // Demo try catch, it's useless (lost stack trace)
-      {
-          // The return type is void, not a Task, exception can't be set on a void,
-          // so it's thrown back to the caller and app crashes.
-          // Returning an exception in Task would be correct (compiler does it automatically).
-          throw ex;
-      }
-  }
-  ```
-  
-  - When working with `async void` whole code in method should be in `try`, `catch`, `finally` blocks,
-    without `throw`, so it makes sure no exception is thrown back to the caller (prevents app crash)
-
 # 2.8 - Best practices
 
 - Asynchronous ASP.NET relieves web server of work, and it can take care of other requests while asynchronous
@@ -1235,11 +1105,13 @@ Completed 2
 
 1. Standard .NET collections aren't thread-safe, try to break few and check what happens
 
-1. What happens if `Task.WhenAny` returns the first completed task and the next task throws an exception or `Task.WhenALl`?
+1. What happens if `Task.WhenAny` returns the first completed task and the next task throws an exception or `Task.WhenAll`?
 
-1. Explore the benefits of `ConfigureAwait(false)`
+2. `Task.WhenAll` exceptions and `Parallel` [link](https://code-maze.com/csharp-execute-multiple-tasks-asynchronously/)
 
-1. Is async method with no await started like Task.Run?
+3. Explore the benefits of `ConfigureAwait(false)`
+
+4. Is async method with no await started like Task.Run?
 
     ```cs
     using var cts = new CancellationTokenSource();
@@ -1265,17 +1137,17 @@ Completed 2
     }
     ```
 
-1. Are all continuations running on the same new thread?
+5. Are all continuations running on the same new thread?
 
     ```cs
     await foreach (var stock in enumerator) {}
     ```
 
-1. `Task.Yield`
+6. `Task.Yield`
 
-1. `ValueTask`
+7. `ValueTask`
 
-1. Program, Process, Thread  
+8. Program, Process, Thread  
     ![Program, Process, Thread](assets/Program_Process_Thread.png)
 
-1. Own awaitable type with `GetAwaiter`
+9. Own awaitable type with `GetAwaiter`

@@ -7,8 +7,10 @@ string value = await GetAsync();
 
 Console.WriteLine(value);
 
-// Every async method will look like this, only different method builders are used.
+// This is how a decompiled `async Task` method looks like.
 // Keywords `async` and `await` are just a syntax sugar, they don't exist in low level C#/IL compiled code.
+// `async Task` method automatically returns a `Task`, without explicit `return`. Compiler does it for us.
+// Every async method will look like this, only different method builders are used.
 Task<string> GetAsync()
 {
     var stateMachine = new StateMachine
