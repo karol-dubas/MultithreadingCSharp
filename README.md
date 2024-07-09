@@ -10,7 +10,7 @@
 ## Concurrent programming
 
 Concurrent programming made it possible to solve the problem of multitasking when the first OS were created, even with only 1 CPU core.
-During concurrent programming, there is a context switching, that is imperceptible to humans (looks like parallelism).
+During concurrent programming, there is a **context switching**, that is imperceptible to humans (looks like parallelism).
 
 ## Asynchronous programming
 
