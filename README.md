@@ -125,25 +125,6 @@ Occurs when multiple things performing work on the same shared resource. It can 
 
 --------------------------------------------------------------------------------------
 
-# 2.8 - Best practices
-
-- Asynchronous ASP.NET relieves web server of work, and it can take care of other requests while asynchronous
-  operations are running
-- `.Result` or `Wait` on `Task` variable will block a thread.
-  Execution will run synchronously, it may even deadlock whole application (if app has `SynchronizationContext`)
-- Using `.Result` in the continuation is fine
-
-  ```cs
-  async void GetStocks()
-  {
-      var store = new DataStore();
-      var responseTask = store.GetStockPrices("MSFT");
-      await responseTask;
-
-      Stocks.ItemsSource = responseTask.Result; // it was awaited, so Result is fine here
-  }
-  ```
-
 # 3.1 - Task-based asynchronous pattern (TAP)
 
 ## Task class

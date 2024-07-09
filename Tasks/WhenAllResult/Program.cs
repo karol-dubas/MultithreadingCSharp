@@ -8,9 +8,10 @@ var barTask = repo.GetBarAsync();
 
 Console.WriteLine(fooTask.IsCompleted); // False
 
-// Blocking operation that waits for an asynchronous operation to finish (fooTask.IsCompleted == true)
-// it will run synchronously and may cause a deadlock
-// int fooResult = fooTask.Result;
+// Blocking operations that waits for an asynchronous operation to finish (fooTask.IsCompleted == true)
+// these will run synchronously and may cause a deadlock (if app has a `SynchronizationContext`):
+//int fooResult = fooTask.Result;
+//fooTask.Wait();
 
 int[] results = await Task.WhenAll(fooTask, barTask); // Result array is returned
 
