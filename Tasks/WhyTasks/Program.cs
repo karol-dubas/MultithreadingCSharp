@@ -44,5 +44,5 @@ if (threadException is not null)
 // - Exception rethrow/handling and generic results (no need to create external variables).
 // - Async programming with await (multiple threads used) which solves the thread starvation problem,
 //   because Task is a promise of an operation completing in the future.
-//   Easy non-blocking `WhenAll` & `WhenAny` methods.
+//   Easy non-blocking WhenAll & WhenAny methods.
 // - Easy continuation chaining.

@@ -1,6 +1,8 @@
-﻿var mainThread = Thread.CurrentThread;
+﻿using Helpers;
+
+var mainThread = Thread.CurrentThread;
 mainThread.Name = "Main thread";
-mainThread.PrintBasicInfo();
+mainThread.PrintInfo();
 
 bool threadCompleted = false;
 var thread = new Thread(() =>
@@ -16,9 +18,9 @@ thread.Name = "My Thread 1";
 // Terminate after the end of the main thread, don't wait for this thread.
 //thread1.IsBackground = true;
 
-thread.PrintBasicInfo();
+thread.PrintInfo();
 thread.Start(); // Assign a Thread from the OS and run it
-thread.PrintBasicInfo();
+thread.PrintInfo();
 
 // We don't know at what point the thread will end and when main thread work can be resumed.
 

@@ -6,7 +6,7 @@ var fooTask = repo.GetFooAsync(); // No await, continue
 int barResult = await repo.GetBarAsync(); // Return control to the caller
 int fooResult = await fooTask; // Again, return control to the caller
 
-// Everything after `await` is a continuation
+// Everything after await is a continuation
 
 return barResult + fooResult;
 

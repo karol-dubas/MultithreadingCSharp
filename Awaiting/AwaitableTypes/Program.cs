@@ -1,4 +1,4 @@
-﻿// `await` can be used only on objects with GetAwaiter method that returns INotifyCompletion object
+﻿// await can be used only on objects with GetAwaiter method that returns INotifyCompletion object
 int number = await Get();
 Console.WriteLine(number);
 

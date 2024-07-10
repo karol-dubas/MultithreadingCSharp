@@ -28,7 +28,9 @@ After calling an I/O operation, we can wait for the result:
 
 Debugging doesn't stop asynchronous operations.
 
-### Synchronous (blocking) web server example
+### Asynchronous operations benefits example
+
+#### Synchronous (blocking) web server example
 
 Synchronous web application with 1 CPU core during the request execution starts a new thread, if it performs synchronous operation, it will block the application.
 If application is used by more than 1 user, concurrent programming with context switching is used to handle such requests (1 CPU core).
@@ -56,7 +58,7 @@ API sync load test scenario (5s timeout)
     - fail:     112     (min > 5s)
 ```
 
-### Asynchronous web server example
+#### Asynchronous web server example
 
 Asynchronous programming can be implemented on 1 thread, it doesn't require more than 1 core or 1 thread, but it's welcomed to use multiple threads.
 
@@ -89,14 +91,61 @@ Asynchronous operations occurs in parallel, but it subscribes to when that opera
 
 ### C# asynchronous patterns history
 
-- APM - Asynchronous Programming Model
-- EAP - Event-based Asynchronous Pattern
-- TAP - Task-based Asynchronous Programming (current)
+In C#, there are several options for performing parallel operations, some of them are legacy, but can be adapted to the latest approach with `TaskCompletionSource `.
 
-### `async`
+#### APM - Asynchronous Programming Model
+
+Also called the `IAsyncResult` pattern, which is the **legacy** model that uses the `IAsyncResult` interface to provide asynchronous behavior.
+In this pattern, asynchronous operations require `Begin` and `End` methods.
+
+```cs
+string filePath = "example.txt";
+byte[] buffer = new byte[1024];
+FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+fs.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(ReadCallback), fs);
+// ...
+
+void ReadCallback(IAsyncResult ar)
+{
+    FileStream fs = (FileStream)ar.AsyncState;
+    int bytesRead = fs.EndRead(ar);
+    Console.WriteLine("Bytes read: " + bytesRead);
+    fs.Close();
+}
+```
+
+#### EAP - Event-based Asynchronous Pattern
+
+Event-based **legacy model** for providing asynchronous behavior.
+We can subscribe to events that indicate when the operations are completed.
+It requires one or more events, event handler delegate types, and `EventArg`-derived types.
+
+```cs
+var worker = new BackgroundWorker();
+
+worker.DoWork += (sender, e) =>
+{
+    // Runs on a different thread
+    Dispatcher.Invoke(() => Notes.Text += $"Worker DoWork\n");
+};
+
+worker.RunWorkerCompleted += (sender, e) =>
+{
+    // Triggered when work is done  
+    Notes.Text += $"Worker completed";
+};
+
+worker.RunWorkerAsync();
+```
+
+#### TAP - Task-based Asynchronous Programming
+
+It's the **current** and recommended approach to asynchronous programming in .NET with the `async` and `await` keywords in C#.
+
+##### `async`
 Allows to use `await` keyword and spawns a **state machine**
 
-### `await`
+##### `await`
 - Pauses execution of the method until a result is available, without blocking the calling thread. 
 - Waits for the operation to be completed, then continues execution
 - Guarantees that the code after it won't be executed until the asynchronous operation is completed
@@ -105,13 +154,25 @@ Allows to use `await` keyword and spawns a **state machine**
 - Introduces continuation that allows to get back to the original context (thread). Code after `await` will run once task has completed, and it will run on the same thread that spawned asynchronous operation
 - Keyword `await` can be used on any *awaitable* type, which can be created by implementing `GetAwaiter` method
 
-### `Task`
+##### `Task`
 - Is a representation of asynchronous operation that can return a result
 - Object returned from an asynchronous method is a reference to operation/result/error
+- Allows to:
+  - execute work on a different thread
+  - get the result from asynchronous operation
+  - subscribe to when operation is done + continuation
+  - handle exceptions
+
+##### TaskCompletionSource
+
+`TaskCompletionSource` is used to create a `Task` that can be manually controlled.
+It allows you to complete the task explicitly by calling `SetResult`, `SetException`, or `SetCanceled`.
+It is often used to bridge older asynchronous patterns (like APM or EAP) with the newer `async` & `await` pattern.
 
 ## ASP.NET synchronization context
 
-In ASP.NET Core `SynchronizationContext` was removed so using `Task.ConfigureAwait(false)` doesn't work, but it works in other/older .NET applications.
+In ASP.NET Core `SynchronizationContext` was removed so using `Task.ConfigureAwait(false)` doesn't work.
+It works in other/older .NET applications, and should be used in libraries, because the library can be used by any type of application.
 
 ## Parallel Programming
 - Used in the CPU bound scenarios to maximize performance.
@@ -125,116 +186,7 @@ Occurs when multiple things performing work on the same shared resource. It can 
 
 --------------------------------------------------------------------------------------
 
-# 3.1 - Task-based asynchronous pattern (TAP)
-
-## Task class
-
-- `Task` allows:
-  - to execute work on a different thread
-  - to get the result from asynchronous operation
-  - to subscribe to when operation is done + continuation
-  - for exception handling
-
-## Task.Run static method
-
-`Task.Run` queues methods on the thread pool for execution.
-
-```cs
-Task task1 = Task.Run(() => { /* Heavy operation */ });
-
-// Generic version with return value
-Task task2 = Task.Run<T>(() => { return new T(); });
-```
-
-# 3.1 - Task intro
-
-```cs
-// Offloading work on another thread.
-// It queues this anonymous method execution on the thread pool
-// and it should be executed immediately (assuming that thread pool isn't busy).
-var data = await Task.Run(() =>
-{
-    // ...
-});
-
-// data is T of Task<T>, so it's just a generic result
-```
-
-# 3.2 - Creating async operation with Task
-
-- When not awaiting `Task.Run`, the task scheduler will queue this to the thread pool,
-  and it will execute that whenever there is an available thread.
-  This call will complete immediately and code execution will continue (no await)
-
-```cs
-Task.Run(() => {});
-```
-
-# 3.3 - Obtaining the async result without async & await keywords
-
-- `ContinueWith` is an alternative approach to subscribe to an async operation
-
-```cs
-void Search_Click(...)
-{
-    try
-    {
-        var loadLinesTask = Task.Run(() => File.ReadAllLines("StockPrices_Small.csv"));
-
-        // ContinueWith allows for continuation and it will run when task has finished
-        var processStocksTask = loadLinesTask.ContinueWith(completedTask =>
-        {
-            // In contrast to await continuation, it won't execute on the original thread.
-            
-            // Task has completed, so using Result is ok here,
-            // it won't lock any thread, it just contains what the task returns
-            var lines = completedTask.Result;
-        });
-    }
-    catch (Exception ex)
-    {
-        Notes.Text = ex.Message;
-    }
-}
-```
-- `async` & `await` is easier to read, has less code and is less error-prone
-
-# 3.4 - Nested asynchronous operations
-
-```cs
-async Task NestedAsync()
-{
-    // Thread 1
-    Task.Run(async () => // anonymous async method automatically returns a `Task`, not `async void`
-    {
-        // Thread 2
-        await Task.Run(() =>
-        {
-            // Thread 3
-        });
-        // Thread 2 (continuation)
-    });
-    // Thread 1
-}
-```
-
 # 3.5 - Handling Task success and failure
-
-- No matter how async operation is executed, it should always be validated (exception handling).
-  To validate task execution either use:
-  - `async`, `await` and `try`, `catch`
-    
-  ```cs
-  try
-  {
-    // ...
-      await task;
-  }
-  catch (Exception e)
-  {
-      // Log e.Message
-  }
-  ```
 
   - `ContinueWith` with error handling options
     
@@ -455,42 +407,6 @@ foreach (string id in ids)
 await Task.WhenAll(loadingTasks);
 ```
 
-# 4.5 - Execution Context and Controlling the Continuation
-
-- For reasons like performance or context switching, there isn't always a need to return to the original context,
-  when running the code in the continuations
-- `Task.ConfigureAwait`:
-  - Configures method how the continuation should execute.
-  - It can be configured with `ConfigureAwait(false)` to continue on the new thread.
-    Each method marked with `async` has its own asynchronous context, therefore
-    it only affects the continuation in the method that you are operating in.
-  - No code after `ConfigureAwait(false)` should require the original context.
-  - `ConfigureAwait(false)` means, that there is no continuation enqueue on a thread pool.
-    It skips `SynchronizationContext` and it's quicker than waiting for another thread to be available.
-
-```cs
-private async Task Method1()
-{
-    // Thread 1
-    await Method2();
-    // Thread 1 (marshaled back)
-}
-
-private async Task Method2()
-{
-    // Thread 1
-    await Task.Run(() => { })
-        .ConfigureAwait(false);
-    // Thread 2
-    // Continue on new thread
-}
-```
-
-# 4.6 - ConfigureAwait in ASP.NET
-
-- ASP.NET Core doesn't use synchronization context, thus making `ConfigureAwait(false)` is useless
-- `ConfigureAwait(false)` should be used in libraries, because the library can be used by any type of application
-
 # 5.2 - Asynchronous Streams and Disposables
 
 - `IAsyncEnumerable<T>`:
@@ -544,8 +460,6 @@ await using var service = new StockStreamService();
 
 # 5.3 - The Implications of Async and Await
 
-- Using `async` keyword generates a bit of code and introduces a state machine
-- State machine is generated for every `async` method
 - State machine allows for:
   - Keeping track of tasks
   - Executes the continuation
@@ -719,48 +633,6 @@ private sealed class <Foo>d__6 : IAsyncStateMachine
 
 Now state machine keeps track of the current state and has an awaiter to keep track of current ongoing operations, to know if it's completed
 
-# 5.4 - Reducing the Amount of State Machines
-
-All the methods using `await` and `async` keywords validate that the method it's calling completed successfully.
-Methods below are waiting for a result, and this means that each of them will have a generated state machine code.
-
-```cs
-private async Task<string> Method1()
-{
-    return await Method2();
-}
-
-private async Task<string> Method2()
-{
-    return await Method3();
-}
-
-private async Task<string> Method3()
-{
-    return await Task.Run(() => "Hello");
-}
-```
-
-There is no continuation in these methods, so to keep amount of generated code to a minimum, we can skip `async` & `await`. 
-If the caller has the opportunity to await `Task`, then it should do so. Asynchronous operation should be awaited at the top level. It also reduces potential errors.
-
-```cs
-private async Task<string> Method1()
-{
-    return await Method2();
-}
-
-private Task<string> Method2()
-{
-    return Method3();
-}
-
-private Task<string> Method3()
-{
-    return Task.Run(() => "Hello");
-}
-```
-
 # 5.5 - Deadlocking
 
 A deadlock occurs if 2 threads depend on each other and one of them is blocked.
@@ -820,53 +692,6 @@ Asynchronous operation can't communicate to the state machine when it completes.
 `Progress<T>` provides `IProgress<T>` that invokes callbacks for each reported value with `IProgress<T>.Report`.
 `Progress<T>.ProgressChanged` event is raised every report on the calling context.
 Passing `Progress<T>` object to another thread will use synchronization context, like awaiter when communicating back to the original context.
-
-# 6.3 - Using Task Completion Source
-
-In C#, there are several options for performing parallel operations. The latest one is the TAP approach.
-
-## Event-based asynchronous pattern
-
-We can subscribe to events that indicate when the operations are completed.
-
-```cs
-var worker = new BackgroundWorker();
-
-worker.DoWork += (sender, e) =>
-{
-    // Runs on a different thread
-    Dispatcher.Invoke(() => Notes.Text += $"Worker DoWork\n");
-};
-
-worker.RunWorkerCompleted += (sender, e) =>
-{
-    // Triggered when work is done  
-    Notes.Text += $"Worker completed";
-};
-
-worker.RunWorkerAsync();
-```
-
-## Manual ThreadPool enqueue 
-
-It can't be awaited.
-
-```cs
-ThreadPool.QueueUserWorkItem(_ =>
-{
-    // Run on a different thread
-    Dispatcher.Invoke(() => Notes.Text += $"ThreadPool work item");
-});
-```
-
-## TaskCompletionSource
-
-- Used for old, legacy code to create awaitable `Task`
-- `TaskCompletionSource<T>` is for consuming a parallel or async operations different from TAP approach,
-  where `Task` isn't exposed, so no `async` & `await` keywords can be used
-- Creates a `Task` which could be returned or awaited
-- `TaskCompletionSource<T>.Task` doesn't run anything itself,
-  it is marked as completed when it gets the result set on it, so it means it can be awaited
 
 # 6.4 - Working with Attached and Detached Tasks
 

@@ -17,7 +17,7 @@ try
     // async void method can't be awaited.
     //await VoidMethod();
     
-    // `async void` should be used only for event handlers
+    // async void should be used only for event handlers
 }
 catch (Exception)
 {

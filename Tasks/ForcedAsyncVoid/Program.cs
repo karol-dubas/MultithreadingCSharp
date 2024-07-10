@@ -11,8 +11,8 @@ Console.ReadKey();
 
 async void ToggleBulbState() // async void method
 {
-    // When working with forced `async void` method, whole code must be in `try`, `catch`, `finally` blocks,
-    // without any `throw`, so it makes sure no exception is thrown back to the caller (prevents app crash)
+    // When working with forced async void method, whole code must be in try, catch, finally blocks,
+    // without any throw, so it makes sure no exception is thrown back to the caller (prevents app crash)
     
     try
     {
@@ -24,7 +24,7 @@ async void ToggleBulbState() // async void method
     {
         // The return type is void, not a Task, exception can't be set on a void,
         // so it's thrown back to the caller and the app crashes.
-        // Returning an exception in Task would be correct with `async Task` (compiler does it automatically).
+        // Returning an exception in Task would be correct with async Task (compiler does it automatically).
         
         // Will crash the app
         //throw;

@@ -1,4 +1,6 @@
-﻿Console.WriteLine($"CPU logical threads: {Environment.ProcessorCount}");
+﻿using Helpers;
+
+Console.WriteLine($"CPU logical threads: {Environment.ProcessorCount}");
 
 Console.WriteLine();
 Console.WriteLine("Manual Thread:");
@@ -12,7 +14,7 @@ var thread = new Thread(() =>
 });
 
 thread.Start();
-thread.PrintBasicInfo();
+thread.PrintInfo();
 thread.Join(); // Block main thread and wait
 
 Console.WriteLine();
@@ -27,7 +29,7 @@ bool tpThreadFinished = false;
 ThreadPool.QueueUserWorkItem(_ =>
 {
     Console.WriteLine($"Thread {Environment.CurrentManagedThreadId} started");
-    Thread.CurrentThread.PrintBasicInfo();
+    Thread.CurrentThread.PrintInfo();
     Thread.Sleep(500);
     Console.WriteLine($"Thread {Environment.CurrentManagedThreadId} finished");
     tpThreadFinished = true;

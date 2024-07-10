@@ -1,4 +1,5 @@
 using System.Windows;
+using Helpers;
 
 namespace WpfSyncCtx;
 
@@ -23,32 +24,38 @@ public partial class MainWindow
 
     private async void SyncButton_OnClick(object sender, RoutedEventArgs e)
     {
-        PrintCurrentThread(1); // Thread #1
+        ThreadExtensions.PrintCurrentThread(1); // Thread #1
 
         await Task.Run(() =>
         {
-            PrintCurrentThread(2); // Thread #2
+            ThreadExtensions.PrintCurrentThread(2); // Thread #2
         });
 
-        PrintCurrentThread(3); // Thread #1
+        ThreadExtensions.PrintCurrentThread(3); // Thread #1
 
         Console.WriteLine();
     }
     
     private async void NoSyncButton_OnClick(object sender, RoutedEventArgs e)
     {
-        PrintCurrentThread(1); // Thread #1
+        ThreadExtensions.PrintCurrentThread(1); // Thread #1
 
+        // ConfigureAwait configures how the continuation should execute.
+        // ConfigureAwait(false) configures to continue on the new thread,
+        // It skips SynchronizationContext, and it's quicker than waiting for another thread to be available.
         await Task.Run(() =>
         {
-            PrintCurrentThread(2); // Thread #2
-        }).ConfigureAwait(false);
+            ThreadExtensions.PrintCurrentThread(2); // Thread #2
+        }).ConfigureAwait(false); // No continuation enqueue on a ThreadPool
+        
+        // TODO:
+        // Each method marked with `async` has its own asynchronous context,
+        // therefore it only affects the continuation in the method that you are operating in.
 
-        PrintCurrentThread(3); // Thread #2
+        ThreadExtensions.PrintCurrentThread(3); // Thread #2 (continue on new thread)
 
         Console.WriteLine();
     }
     
-    private void PrintCurrentThread(int i) 
-        => Console.WriteLine($"[{i}] Thread: " + Environment.CurrentManagedThreadId);
+
 }

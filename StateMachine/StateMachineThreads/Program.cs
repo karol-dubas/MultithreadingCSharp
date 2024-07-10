@@ -4,7 +4,7 @@ Console.WriteLine($"End 1: {Environment.CurrentManagedThreadId}");
 Console.ReadKey(false);
 
 // TODO: no await version (compare thread ids)
-// TODO: difference between starting background operation with `Task.Run(Test)` vs `Test()`
+// TODO: difference between starting background operation with Task.Run(Test) vs Test()
 
 // Console.WriteLine($"Start 2: {Environment.CurrentManagedThreadId}");
 // Task.Run(Test);

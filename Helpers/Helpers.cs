@@ -1,6 +1,8 @@
-﻿public static class ThreadExtensions
+﻿namespace Helpers;
+
+public static class ThreadExtensions
 {
-    public static void PrintBasicInfo(this Thread thread)
+    public static void PrintInfo(this Thread thread)
     {
         string info = $"""
                        -----------------------------------
@@ -20,4 +22,7 @@
         string info = $"Id: {thread.ManagedThreadId}, ThreadState: {thread.ThreadState}";
         Console.WriteLine(info);
     }
+    
+    public static void PrintCurrentThread(double number) 
+        => Console.WriteLine($"[{number}] Thread: " + Environment.CurrentManagedThreadId);
 }

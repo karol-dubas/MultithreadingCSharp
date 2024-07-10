@@ -2,14 +2,14 @@
 
 // Start async state machine.
 // After receiving a Task object, it looks as if the method is not executed from the beginning,
-// but somewhere in the middle of the method (after `await`).
+// but somewhere in the middle of the method (after await).
 string value = await GetAsync();
 
 Console.WriteLine(value);
 
-// This is how a decompiled `async Task` method looks like.
-// Keywords `async` and `await` are just a syntax sugar, they don't exist in low level C#/IL compiled code.
-// `async Task` method automatically returns a `Task`, without explicit `return`. Compiler does it for us.
+// This is how a decompiled async Task method looks like.
+// Keywords async and await are just a syntax sugar, they don't exist in low level C#/IL compiled code.
+// async Task method automatically returns a Task, without explicit return. Compiler does it for us.
 // Every async method will look like this, only different method builders are used.
 Task<string> GetAsync()
 {
