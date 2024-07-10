@@ -1,16 +1,22 @@
-﻿ThreadExecutor threadExecutor = new();
+﻿AsyncThreadExecutor executor = new();
 
 Console.WriteLine("Start");
 
-const int count = 5;
-for (int i = 0; i < count; i++)
+const int count = 4;
+for (int i = 1; i <= count; i++)
 {
     int copy = i;
-    threadExecutor.Enqueue(delegate
+    executor.Prepare(delegate
     {
-        Console.WriteLine($"[{copy}] Distributed work started...");
+        Console.WriteLine($"[{copy}] Started working...");
         Thread.Sleep(Random.Shared.Next(2_000));
+        Console.WriteLine($"[{copy}] Completed");
     });
+    
+    Console.WriteLine($"Prepared {i}/{count}");
 }
-await threadExecutor.ExecuteAndWaitAll();
+
+// TODO: What is the benefit of this? Main thread isn't blocked, that is all?
+await executor.ExecuteAllAsync(); 
+
 Console.WriteLine("End");
