@@ -22,7 +22,7 @@ thread.PrintInfo();
 thread.Start(); // Assign a Thread from the OS and run it
 thread.PrintInfo();
 
-// We don't know at what point the thread will end and when main thread work can be resumed.
+// We don't know at what point the thread will end and when the main thread work can be resumed.
 
 // Join method can be used to wait synchronously for Thread completion.
 //thread.Join();

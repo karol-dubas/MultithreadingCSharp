@@ -17,7 +17,7 @@ for (int i = 1; i <= count; i++)
 }
 
 // TODO: What is the benefit of this?
-// Main thread isn't blocked, but a new waiting thread is created instead
+// Main thread isn't blocked, but a new waiting thread is created instead.
 await executor.ExecuteAllAsync(); 
 
 Console.WriteLine("End");

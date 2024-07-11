@@ -186,30 +186,6 @@ Occurs when multiple things performing work on the same shared resource. It can 
 
 --------------------------------------------------------------------------------------
 
-# 3.5 - Handling Task success and failure
-
-  - `ContinueWith` with error handling options
-    
-  ```cs
-  await task.ContinueWith(t =>
-  {
-      // Log t.Exception.Message (aggregate exception)
-  }, TaskContinuationOptions.OnlyOnFaulted);
-  ```
-
-- Working with `ContinueWith`:
-  
-```cs
-var loadLinesTask = Task.Run(() => throw new FileNotFoundException());
-
-loadLinesTask.ContinueWith(completedTask => { /* Will always run */ });
-
-loadLinesTask.ContinueWith(completedTask =>
-{
-    // Will run if successfully completed
-}, TaskContinuationOptions.OnlyOnRanToCompletion);
-```
-
 # 3.6 - Canceling a Task with CancellationTokenSource
 
 ```cs

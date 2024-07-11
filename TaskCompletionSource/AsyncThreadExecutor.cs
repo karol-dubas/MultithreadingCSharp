@@ -10,6 +10,7 @@ public class AsyncThreadExecutor : ThreadExecutor
     // Property Task can be returned or awaited.
     private readonly TaskCompletionSource _tcs = new();
     
+    // TODO: What is the difference compared to wrapping with Task.Run returning its Task and awaiting it?
     public Task ExecuteAllAsync()
     {
         new Thread(() =>
