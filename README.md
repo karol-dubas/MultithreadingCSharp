@@ -687,12 +687,6 @@ private async Task<IEnumerable<StockPrice>> LoadStocks()
 The state machine with the code inside runs on the same thread (UI in this case) and it can't be executed, because this thread is blocked.
 Asynchronous operation can't communicate to the state machine when it completes.
 
-# 6.2 - Report on the Progress of a Task
-
-`Progress<T>` provides `IProgress<T>` that invokes callbacks for each reported value with `IProgress<T>.Report`.
-`Progress<T>.ProgressChanged` event is raised every report on the calling context.
-Passing `Progress<T>` object to another thread will use synchronization context, like awaiter when communicating back to the original context.
-
 # 6.4 - Working with Attached and Detached Tasks
 
 ```cs

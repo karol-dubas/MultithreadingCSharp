@@ -76,6 +76,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContinueWith", "Tasks\Conti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskCompletionSource", "TaskCompletionSource\TaskCompletionSource.csproj", "{8FA19E4F-9A3A-490C-BD0E-6E3BB76E91A5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Progress", "Progress\Progress.csproj", "{AE6019B4-F5B1-48C5-95D7-993D367013C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -202,6 +204,10 @@ Global
 		{8FA19E4F-9A3A-490C-BD0E-6E3BB76E91A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FA19E4F-9A3A-490C-BD0E-6E3BB76E91A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FA19E4F-9A3A-490C-BD0E-6E3BB76E91A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE6019B4-F5B1-48C5-95D7-993D367013C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE6019B4-F5B1-48C5-95D7-993D367013C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE6019B4-F5B1-48C5-95D7-993D367013C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE6019B4-F5B1-48C5-95D7-993D367013C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{53B8B86A-333C-4A44-A102-1782161AB427} = {88B1D314-C687-44D4-96C1-67EFDF563DD4}
