@@ -7,12 +7,12 @@
 
 ![Concurrency vs Parallelism](assets/Concurrency_Parallelism.png)
 
-## Concurrent programming
+# Concurrent programming
 
 Concurrent programming made it possible to solve the problem of multitasking when the first OS were created, even with only 1 CPU core.
 During concurrent programming, there is a **context switching**, that is imperceptible to humans (looks like parallelism).
 
-## Asynchronous programming
+# Asynchronous programming
 
 Solves the problem of blocking threads (not concurrency or parallelism).
 
@@ -28,9 +28,9 @@ After calling an I/O operation, we can wait for the result:
 
 Debugging doesn't stop asynchronous operations.
 
-### Asynchronous operations benefits example
+## Asynchronous operations benefits example
 
-#### Synchronous (blocking) web server example
+### Synchronous (blocking) web server example
 
 Synchronous web application with 1 CPU core during the request execution starts a new thread, if it performs synchronous operation, it will block the application.
 If application is used by more than 1 user, concurrent programming with context switching is used to handle such requests (1 CPU core).
@@ -58,7 +58,7 @@ API sync load test scenario (5s timeout)
     - fail:     112     (min > 5s)
 ```
 
-#### Asynchronous web server example
+### Asynchronous web server example
 
 Asynchronous programming can be implemented on 1 thread, it doesn't require more than 1 core or 1 thread, but it's welcomed to use multiple threads.
 
@@ -89,11 +89,11 @@ API async load test scenario (5s timeout)
 
 Asynchronous operations occurs in parallel, but it subscribes to when that operation completes.  
 
-### C# asynchronous patterns history
+## C# asynchronous patterns history
 
 In C#, there are several options for performing parallel operations, some of them are legacy, but can be adapted to the latest approach with `TaskCompletionSource `.
 
-#### APM - Asynchronous Programming Model
+### APM - Asynchronous Programming Model
 
 Also called the `IAsyncResult` pattern, which is the **legacy** model that uses the `IAsyncResult` interface to provide asynchronous behavior.
 In this pattern, asynchronous operations require `Begin` and `End` methods.
@@ -114,7 +114,7 @@ void ReadCallback(IAsyncResult ar)
 }
 ```
 
-#### EAP - Event-based Asynchronous Pattern
+### EAP - Event-based Asynchronous Pattern
 
 Event-based **legacy model** for providing asynchronous behavior.
 We can subscribe to events that indicate when the operations are completed.
@@ -138,14 +138,14 @@ worker.RunWorkerCompleted += (sender, e) =>
 worker.RunWorkerAsync();
 ```
 
-#### TAP - Task-based Asynchronous Programming
+### TAP - Task-based Asynchronous Programming
 
 It's the **current** and recommended approach to asynchronous programming in .NET with the `async` and `await` keywords in C#.
 
-##### `async`
+#### `async`
 Allows to use `await` keyword and spawns a **state machine**
 
-##### `await`
+#### `await`
 - Pauses execution of the method until a result is available, without blocking the calling thread. 
 - Waits for the operation to be completed, then continues execution
 - Guarantees that the code after it won't be executed until the asynchronous operation is completed
@@ -154,7 +154,7 @@ Allows to use `await` keyword and spawns a **state machine**
 - Introduces continuation that allows to get back to the original context (thread). Code after `await` will run once task has completed, and it will run on the same thread that spawned asynchronous operation
 - Keyword `await` can be used on any *awaitable* type, which can be created by implementing `GetAwaiter` method
 
-##### `Task`
+#### `Task`
 - Is a representation of asynchronous operation that can return a result
 - Object returned from an asynchronous method is a reference to operation/result/error
 - Allows to:
@@ -163,18 +163,19 @@ Allows to use `await` keyword and spawns a **state machine**
   - subscribe to when operation is done + continuation
   - handle exceptions
 
-##### TaskCompletionSource
+#### TaskCompletionSource
 
 `TaskCompletionSource` is used to create a `Task` that can be manually controlled.
 It allows you to complete the task explicitly by calling `SetResult`, `SetException`, or `SetCanceled`.
 It is often used to bridge older asynchronous patterns (like APM or EAP) with the newer `async` & `await` pattern.
 
-## ASP.NET synchronization context
+#### ASP.NET & Console app `SynchronizationContext`
 
 In ASP.NET Core `SynchronizationContext` was removed so using `Task.ConfigureAwait(false)` doesn't work.
+In console app there is no `SynchronizationContext` as well.
 It works in other/older .NET applications, and should be used in libraries, because the library can be used by any type of application.
 
-## Parallel Programming
+# Parallel Programming
 - Used in the CPU bound scenarios to maximize performance.
 - Split and solve small pieces independently, use as much computer resources as possible
 - CPU cores can perform operations independently, so with their use we can program in parallel
@@ -185,99 +186,6 @@ It works in other/older .NET applications, and should be used in libraries, beca
 Occurs when multiple things performing work on the same shared resource. It can be solved with thread synchronization mechanisms.
 
 --------------------------------------------------------------------------------------
-
-# 3.6 - Canceling a Task with CancellationTokenSource
-
-```cs
-CancellationTokenSource cts = new();
-CancellationToken ct = cts.Token;
-
-// CancellationToken can be passed to async methods
-```
-
-- `CancellationTokenSource`:
-  - Provides cancellation request mechanism using cancellation tokens
-  - Signals to a `CancellationToken` that it should be canceled with `Cancel`/`CancelAfter` methods
-  - Calling `CancellationTokenSource.Cancel` won't automatically cancel asynchronous operations,
-    `CancellationToken` and its members are used for that purpose
-  - It is created at the source of an operation/s that may need to be cancelled
-  
-- `CancellationToken`:
-  - Obtained as a property from `CancellationTokenSource`
-  - Indicates to a task that it's canceled, represents cancellation itself,
-    which can be checked or received to handle cancellation request.
-    Doesn't have the capability to trigger cancellation, it can be only observed
-  - It's passed to various methods that support cancellation, to observe and react to cancellation request
-
-- Passing `CancellationToken` to `Task.Run` won't stop execution "inside",
-  it just won't start `Task.Run` if `CancellationToken` is marked as cancelled
-  
-```cs
-cts.Cancel();
-var task = Task.Run(() => { }, ct); // won't start, doesn't affect anonymous method
-task.ContinueWith(t => { }, ct); // same logic applies here
-```
-
-- `TaskStatus` has different values depending on how we chain continuation methods:
-
-```cs
-var ct = new CancellationToken(canceled: true);
-var task = Task.Run(() => "I won't even start", ct);
-
-task.ContinueWith(t => {
-    // t.Status = TaskStatus.Canceled
-});
-
-task.ContinueWith(t => {
-    // t.Status = TaskStatus.Canceled
-});
-```
-but chaining next `Task` with `ContinueWith` is different:
-
-```cs
-var ct = new CancellationToken(canceled: true);
-var task = Task.Run(() => "I won't even start", ct);
-
-task.ContinueWith(t => {
-    // t.Status = TaskStatus.Canceled
-})
-.ContinueWith(t => {
-    // t.Status = TaskStatus.RanToCompletion
-});
-```
-
-- To cancel own long-running task we can use `CancellationToken.IsCancellationRequested`:
-  
-```cs
-Task.Run(() =>
-{
-    while (true)
-    {
-        if (ct.IsCancellationRequested)
-            break;
-    }
-});
-```
-- Execution of operation can be registered on operation cancellation
-  
-```cs
-cts.Token.Register(() => Notes.Text = "Cancellation requested");
-```
-
-# 3.7 - HTTP Client cancellation
-
-- Canceling defined asynchronous methods might be different.
-  Sometimes it might return partial data, and sometimes it throws `TaskCanceledException` to let know that it was canceled
-
-```cs
-using var httpClient = new HttpClient();
-var result = await httpClient.GetAsync(url, ct);
-```
-
-# 3.8 - Summary
-
-- If two methods are needed, sync and async version, don't wrap sync version with `Task.Run` just to make it async.
-  It should be copied and refactored, implemented properly.
 
 # 4.2 - Knowing When All or Any Task Completes
 
@@ -928,3 +836,6 @@ Completed 2
    [source](https://www.youtube.com/channel/UCZgt6AzoyjslHTC9dz0UoTw/community?lb=UgkxC7h3_WHiaeRFkHvbBzmlJudh-7q3W1Cj)
 
 1. Own awaitable type with `GetAwaiter`
+
+1. Background processing with channels
+   [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
