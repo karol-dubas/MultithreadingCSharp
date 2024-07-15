@@ -7,7 +7,8 @@ try
     // but at least app continues execution, and it doesn't crash the app.
     /*await*/ TaskMethod();
     
-    // Unhandled exception, app crashes.
+    // Unhandled exception, app crashes, because it tries to set an exception with AsyncVoidMethodBuilder.SetException on a Task.
+    // Exception can't be set on AsyncVoidMethodBuilder, there is no Task wrapper, but it can be set on AsyncTaskMethodBuilder.
     // An exception is thrown, but it's "outside" (code execution continues) the try catch block.
     // Its fire and forget, once it's started operation can't be managed (can't use await).
     VoidMethod(); 

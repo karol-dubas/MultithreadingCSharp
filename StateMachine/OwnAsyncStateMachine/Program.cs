@@ -3,20 +3,29 @@
 // Start async state machine.
 // After receiving a Task object, it looks as if the method is not executed from the beginning,
 // but somewhere in the middle of the method (after await).
-string value = await GetAsync();
+string value = await OwnStateMachineGetAsync();
 
 Console.WriteLine(value);
+return;
+
+async Task<string> GetAsync()
+{
+    Console.WriteLine("Starting async operation...");
+    await Task.Delay(3_000);
+    Console.WriteLine("Async operation completed"); // continuation
+    return "async result";
+}
 
 // This is how a decompiled async Task method looks like.
 // Keywords async and await are just a syntax sugar, they don't exist in low level C#/IL compiled code.
 // async Task method automatically returns a Task, without explicit return. Compiler does it for us.
 // Every async method will look like this, only different method builders are used.
-Task<string> GetAsync()
+Task<string> OwnStateMachineGetAsync()
 {
     var stateMachine = new StateMachine
     {
-        State = -1, // initial state
-        MethodBuilder = AsyncTaskMethodBuilder<string>.Create()
+        MethodBuilder = AsyncTaskMethodBuilder<string>.Create(),
+        State = -1 // initial state
     };
     
     stateMachine.MethodBuilder.Start(ref stateMachine); // calls StateMachine.MoveNext
@@ -67,14 +76,14 @@ internal struct StateMachine : IAsyncStateMachine
                 // It returns void here, but it can return a generic type.
                 _taskAwaiter.GetResult();
 
-                Console.WriteLine("Async operation completed");
-                MethodBuilder.SetResult("async result");
+                Console.WriteLine("Async operation completed"); // continuation
+                MethodBuilder.SetResult("async result"); // set result on a Task
                 State = -2; // finished
             }
         }
         catch (Exception e)
         {
-            MethodBuilder.SetException(e);
+            MethodBuilder.SetException(e); // set exception on a Task
             State = -2; // finished
         }
     }
