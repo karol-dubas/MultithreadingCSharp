@@ -273,27 +273,13 @@ await Task.WhenAll(loadingTasks);
 
 # 5.2 - Asynchronous Streams and Disposables
 
-- `IAsyncEnumerable<T>`:
-  - Allows for asynchronous retrieval of each item as it arrives to the application
-  - Exposes an enumerator that provides asynchronous iteration
-  - `IAsyncEnumerable` is used instead of `Task` if method is `async`
-  - Method must `yield return`
-  - Using `yield return` with `IAsyncEnumerable<T>` signals to the iterator using this enumerator that it has an item to process
-  - `async IAsyncEnumerable<T>` method can't be awaited, because it's an enumeration
-  - `await foreach`: 
-    - Is used to asynchronously retrieve the data
-    - It awaits each item in the enumeration
-    - `foreach` body is a continuation of each enumeration
-
 ```cs
-// Producing a stream
 public async IAsyncEnumerable<StockPrice> GetStocks(CancellationToken ct = default)
 {
     await Task.Delay(50, ct); // fake delay
     yield return new StockPrice() { Identifier = "TEST" };
 }
 
-// Consuming a stream
 var enumerator = service.GetStocks();
 await foreach (var stock in enumerator) { }
 ```
