@@ -271,43 +271,6 @@ foreach (string id in ids)
 await Task.WhenAll(loadingTasks);
 ```
 
-# 5.2 - Asynchronous Streams and Disposables
-
-```cs
-public async IAsyncEnumerable<StockPrice> GetStocks(CancellationToken ct = default)
-{
-    await Task.Delay(50, ct); // fake delay
-    yield return new StockPrice() { Identifier = "TEST" };
-}
-
-var enumerator = service.GetStocks();
-await foreach (var stock in enumerator) { }
-```
-
-- `EnumeratorCancellationAttribute` is used with `IAsyncEnumerable<T>.WithCancellation`
-
-```cs
-public async IAsyncEnumerable<Stock> GetStocks([EnumeratorCancellation] CancellationToken ct = default) { }
-
-//...
-
-var enumerator = service.GetStocks();
-await foreach (var stock in enumerator.WithCancellation(cts.Token)) {}
-```
-
-- Resources can be cleaned up asynchronously bo implementing `IAsyncDisposable` and `await using`
-
-```cs
-public class StockStreamService : IAsyncDisposable
-{
-    // ...
-
-    public async ValueTask DisposeAsync() { ... }
-}
-
-await using var service = new StockStreamService();
-```
-
 # 5.5 - Deadlocking
 
 A deadlock occurs if 2 threads depend on each other and one of them is blocked.

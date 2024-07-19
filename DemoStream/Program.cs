@@ -1,5 +1,7 @@
 ﻿using Helpers;
 
+// TODO: https://learn.microsoft.com/en-us/archive/msdn-magazine/2019/november/csharp-iterating-with-async-enumerables-in-csharp-8#a-tour-through-async-enumerables
+
 int sum = 0;
 
 // Consuming a stream:
