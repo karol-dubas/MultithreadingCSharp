@@ -183,7 +183,12 @@ It works in other/older .NET applications, and should be used in libraries, beca
 
 # Race conditions
 
-Occurs when multiple things performing work on the same shared resource. It can be solved with thread synchronization mechanisms.
+Occurs when multiple things performing work on the same shared resource.
+It can be solved with thread synchronization mechanisms.
+
+# Deadlocks
+
+A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
 --------------------------------------------------------------------------------------
 
@@ -270,60 +275,6 @@ foreach (string id in ids)
 
 await Task.WhenAll(loadingTasks);
 ```
-
-# 5.5 - Deadlocking
-
-A deadlock occurs if 2 threads depend on each other and one of them is blocked.
-`Task` has a method `Wait` which will block the current thread until the data for the task is available.
-
-```cs
-private void Search_Click(...)
-{
-    var task = Task.Run(() =>
-    {
-        // Update UI (communicate with the original thread)
-        Dispatcher.Invoke(() => { });
-    });
-    
-    // Wait = block UI thread until all processing has completed,
-    // but it can't completed, because it can't communicate back
-    task.Wait();
-}
-```
-UI thread waits for a thread to complete and this thread cannot complete unless it can communicate back to the UI thread.
-
-Another deadlock with `Wait`:
-
-```cs
-private void Search_Click(...)
-{
-    LoadStocks().Wait(); // Deadlock, no await
-}
-
-private async Task LoadStocks()
-{
-    // Load data...
-    Stocks.ItemsSource = data.SelectMany(x => x);
-}
-```
-
-Deadlock with `Result`:
-
-```cs
-private void Search_Click(...)
-{
-    Stocks.ItemsSource = LoadStocks().Result; // Deadlock, no await
-}
-
-private async Task<IEnumerable<StockPrice>> LoadStocks()
-{
-    // Load data...
-    return data.SelectMany(x => x);
-}
-```
-
-The state machine with the code inside runs on the same thread (UI in this case) and it can't be executed, because this thread is blocked.
-Asynchronous operation can't communicate to the state machine when it completes.
 
 # 6.4 - Working with Attached and Detached Tasks
 

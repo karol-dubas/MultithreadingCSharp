@@ -56,6 +56,4 @@ public partial class MainWindow
 
         Console.WriteLine();
     }
-    
-
 }
