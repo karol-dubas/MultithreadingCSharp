@@ -192,62 +192,6 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
 --------------------------------------------------------------------------------------
 
-# 4.2 - Knowing When All or Any Task Completes
-
-```cs
-foreach (string identifier in identifiers)
-{
-    // Each call wii be awaited one by one (await)
-    var loadTask = await service.GetStockPricesFor(identifier, cancellationTokenSource.Token);
-}
-```
-
-- Data can be loaded in parallel by performing multiple asynchronous operations at the same time
-- `Task.WhenAll` accepts a task collection, it creates and returns a `Task`.
-  Returned task status is completed only when all the tasks passed to the method are marked as completed.
-
-  ```cs
-  var loadingTasks = new List<Task<IEnumerable<int>>>();
-
-  foreach (string id in ids)
-  {
-      var loadTask = service.GetAsync(id, cts.Token);
-      loadingTasks.Add(loadTask);
-  }
-  
-  var allResults = await Task.WhenAll(loadingTasks);
-  ```
-
-- With no `await` it isn't executed, it's a representation of loading all the stocks
-  TODO: check " With no `await` it isn't executed"
-
-  ```cs
-  var allResults = Task.WhenAll(loadingTasks);
-  ```
-
-- `Task.WhenAny` returns `Task` after the completion of any first task.
-  It can be used to create a timeout:
-
-```cs
-// ...
-var timeoutTask = Task.Delay(2000);
-var loadAllStocksAtOnceTask = Task.WhenAll(loadingTasks);
-
- // Timeout after 2s
-var firstCompletedTask = await Task.WhenAny(loadAllStocksAtOnceTask, timeoutTask);
-
-if (firstCompletedTask == timeoutTask)
-    throw new OperationCanceledException("Loading timeout");
-
-return loadAllStocksAtOnceTask.Result;
-```
-
-but it's easier to use `cancellationTokenSource.CancelAfter` method to achieve a timeout
-
-- When `Task.WhenAll/WhenAny` are awaited it ensures that if any task failed within method, the exception will be propagated back to the calling context
-
-TODO: `Task.WhenAll/WhenAny` exceptions
-
 # 4.4 - Process Tasks as They Complete
 
 - Standard .NET collections aren't thread-safe.
@@ -274,112 +218,6 @@ foreach (string id in ids)
 }
 
 await Task.WhenAll(loadingTasks);
-```
-
-# 6.4 - Working with Attached and Detached Tasks
-
-```cs
-Task.Run(() => // parent task
-{
-    Task.Run(() => { }); // child task
-    Task.Run(() => { }); // child task
-});
-```
-
-- `Task.Run` doesn't have `TaskContinuationOptions`, it's a shortcut of using the `Task.Factory`
-
-```cs
-Console.WriteLine("Starting");
-
-await Task.Factory.StartNew(() =>
-    {
-        Task.Factory.StartNew(() =>
-        {
-            Thread.Sleep(1000);
-            Console.WriteLine("Completed 1");
-        });
-        Task.Factory.StartNew(() =>
-        {
-            Thread.Sleep(2000);
-            Console.WriteLine("Completed 2");
-        });
-        
-        // Parent tasks immediately starts child tasks and it's marked as completed
-    });
-
-Console.WriteLine("Completed");
-```
-
-Result:
-```
-Starting
-Completed
-Completed 1
-Completed 2
-```
-
-Using `TaskCreationOptions.AttachedToParent`
-
-```cs
-Console.WriteLine("Starting");
-
-await Task.Factory.StartNew(() =>
-    {
-        Task.Factory.StartNew(() =>
-        {
-            Thread.Sleep(1000);
-            Console.WriteLine("Completed 1");
-        }, TaskCreationOptions.AttachedToParent); // Attach to parent
-        
-        Task.Factory.StartNew(() =>
-        {
-            Thread.Sleep(2000);
-            Console.WriteLine("Completed 2");
-        });
-    });
-
-Console.WriteLine("Completed");
-```
-
-Result:
-```
-Starting
-Completed 1
-Completed
-Completed 2
-```
-
-Using `TaskCreationOptions.DenyChildAttach`, which is default for `Task.Run`.
-All child tasks would work as detached tasks.
-
-```cs
-Console.WriteLine("Starting");
-
-await Task.Factory.StartNew(() =>
-    {
-        Task.Factory.StartNew(() =>
-        {
-            Thread.Sleep(1000);
-            Console.WriteLine("Completed 1");
-        }, TaskCreationOptions.AttachedToParent);
-        
-        Task.Factory.StartNew(() =>
-        {
-            Thread.Sleep(2000);
-            Console.WriteLine("Completed 2");
-        });
-    }, TaskCreationOptions.DenyChildAttach);
-
-Console.WriteLine("Completed");
-Console.ReadKey();
-```
-
-Result looks like default `Task.Factory.StartNew` call with no options:
-```
-Starting
-Completed
-Completed 1
-Completed 2
 ```
 
 --------------------------------------------------------------------------------------
@@ -496,6 +334,9 @@ Completed 2
 
 1. What happens if `Task.WhenAny` returns the first completed task and the next task throws an exception or `Task.WhenAll`?
 
+1. `Task.WhenAll/WhenAny` exceptions
+    When `Task.WhenAll/WhenAny` are awaited it ensures that if any task failed within method, the exception will be propagated back to the calling context.
+
 1. `Task.WhenAll` exceptions and `Parallel` [link](https://code-maze.com/csharp-execute-multiple-tasks-asynchronously/)
 
 1. Explore the benefits of `ConfigureAwait(false)`
@@ -528,7 +369,7 @@ Completed 2
 
 1. Are all continuations running on the same new thread?
 
-   ~~~~ ```cs
+    ```cs
     await foreach (var stock in enumerator) {}
     ```
 
