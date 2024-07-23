@@ -1,14 +1,16 @@
-﻿int number = await Get();
+﻿var numberHandlerTask = GetNumberHandler();
+Console.WriteLine($"{nameof(numberHandlerTask)} status: '{numberHandlerTask?.Status}'"); // WaitingForActivation
+int number = await numberHandlerTask!;
+Console.WriteLine($"{nameof(numberHandlerTask)} status: '{numberHandlerTask?.Status}'"); // RanToCompletion
 Console.WriteLine(number);
 
-async Task<int> Get()
+async Task<int> GetNumberHandler()
 {
     Task<int> getNumberTask = null!;
     
     try
     {
-        var storage = new Storage();
-        getNumberTask = storage.GetNumber();
+        getNumberTask = GetNumber();
         
         // If task throws an exception on execution,
         // then it will be re-thrown (await) and caught here.
@@ -16,19 +18,20 @@ async Task<int> Get()
     }
     catch (Exception ex)
     {
-        // State machine sets task status to Faulted
-        Console.WriteLine($"Task status: {getNumberTask?.Status}, exception: {getNumberTask?.Exception?.Message}");
+        Console.WriteLine($"Caught exception of type '{ex.GetType()}' with message: '{ex.Message}'");
     }
+    
+    // State machine sets task status to Faulted if exception was caught.
+    // AggregateException is produced when working with tasks.
+    Console.WriteLine($"{nameof(getNumberTask)} status: '{getNumberTask?.Status}', " +
+                      $"with exception type '{getNumberTask?.Exception?.GetType()}' and message: '{getNumberTask?.Exception?.Message}'"); 
 
     return -1;
 }
 
-class Storage
+async Task<int> GetNumber()
 {
-    public async Task<int> GetNumber()
-    {
-        await Task.Delay(100);
-        throw new Exception("Operation failed");
-        return 1;
-    }
+    await Task.Delay(100);
+    throw new Exception("Operation failed");
+    return 1;
 }
