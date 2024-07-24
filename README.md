@@ -199,33 +199,14 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
 # Questions / TODO
 
-1. When is the method executed? What if an exception is thrown?
+1. What happens if `Task.WhenAny` or `Task.WhenAll` returns the first completed task and the next task throws an exception?
 
-   ```cs
-   void Search_Click(...)
-   {
-       try
-       {
-           var loadLinesTask = Task.Run(() => File.ReadAllLines("StockPrices_Small.csv"));
-           var processStocksTask = loadLinesTask.ContinueWith(completedTask => { /* continuation */ });
-       }
-       catch (Exception ex)
-       {
-           Notes.Text = ex.Message;
-       }
-   }
-   ```
-
-2. Try different `ContinueWith` chain executions, `OnlyOnFaulted` etc.
-
-3. What happens if `Task.WhenAny` returns the first completed task and the next task throws an exception or `Task.WhenAll`?
-
-4. `Task.WhenAll/WhenAny` exceptions
+2. `Task.WhenAll/WhenAny` exceptions
    When `Task.WhenAll/WhenAny` are awaited it ensures that if any task failed within method, the exception will be propagated back to the calling context.
 
-5. `Task.WhenAll` exceptions and `Parallel` [link](https://code-maze.com/csharp-execute-multiple-tasks-asynchronously/)
+3. `Task.WhenAll` exceptions and `Parallel` [link](https://code-maze.com/csharp-execute-multiple-tasks-asynchronously/)
 
-6. Is async method with no await started like Task.Run?
+4. Is async method with no await started like Task.Run?
 
    ```cs
    using var cts = new CancellationTokenSource();
@@ -243,27 +224,23 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
    async Task StartBackgroundService(CancellationToken ct)
    {
-       try
-       {
-           while (!ct.IsCancellationRequested) { /* ... */ }
-       }
-       catch (TaskCanceledException) { } // Is this catch needed? (ct doesn't throw)
+        while (!ct.IsCancellationRequested) { /* ... */ }
    }
    ```
 
-7. Are all continuations running on the same new thread?
+5. `Task.Yield`
 
-8. `Task.Yield`
+6. `ValueTask`
 
-9. `ValueTask`
+7. Own awaitable type with `GetAwaiter`
 
-10. Program, Process, Thread  
+8. Background processing with channels
+   [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
+
+9. Check `CancellationTokenSource`, `CancellationTokenSource.Dispose` etc.
+    
+10. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
+
+11. Program, Process, Thread  
     ![Program, Process, Thread](assets/Program_Process_Thread.png)  
     [source](https://www.youtube.com/channel/UCZgt6AzoyjslHTC9dz0UoTw/community?lb=UgkxC7h3_WHiaeRFkHvbBzmlJudh-7q3W1Cj)
-
-11. Own awaitable type with `GetAwaiter`
-
-12. Background processing with channels
-    [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
-
-13. Check `CancellationTokenSource`, `CancellationTokenSource.Dispose` etc.
