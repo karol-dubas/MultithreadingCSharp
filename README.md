@@ -199,14 +199,7 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
 # Questions / TODO
 
-1. What happens if `Task.WhenAny` or `Task.WhenAll` returns the first completed task and the next task throws an exception?
-
-2. `Task.WhenAll/WhenAny` exceptions
-   When `Task.WhenAll/WhenAny` are awaited it ensures that if any task failed within method, the exception will be propagated back to the calling context.
-
-3. `Task.WhenAll` exceptions and `Parallel` [link](https://code-maze.com/csharp-execute-multiple-tasks-asynchronously/)
-
-4. Is async method with no await started like Task.Run?
+1. Is async method with no await started like Task.Run?
 
    ```cs
    using var cts = new CancellationTokenSource();
@@ -228,19 +221,19 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
    }
    ```
 
-5. `Task.Yield`
+2. Check `CancellationTokenSource`, `CancellationTokenSource.Dispose` etc.
 
-6. `ValueTask`
+3. Own awaitable type with `GetAwaiter`
 
-7. Own awaitable type with `GetAwaiter`
+4. `Task.Yield`
 
-8. Background processing with channels
+5. `ValueTask`
+
+6. Background processing with channels
    [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
+   
+7. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
 
-9. Check `CancellationTokenSource`, `CancellationTokenSource.Dispose` etc.
-    
-10. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
-
-11. Program, Process, Thread  
-    ![Program, Process, Thread](assets/Program_Process_Thread.png)  
-    [source](https://www.youtube.com/channel/UCZgt6AzoyjslHTC9dz0UoTw/community?lb=UgkxC7h3_WHiaeRFkHvbBzmlJudh-7q3W1Cj)
+8. Program, Process, Thread  
+   ![Program, Process, Thread](assets/Program_Process_Thread.png)  
+   [source](https://www.youtube.com/channel/UCZgt6AzoyjslHTC9dz0UoTw/community?lb=UgkxC7h3_WHiaeRFkHvbBzmlJudh-7q3W1Cj)
