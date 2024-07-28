@@ -8,7 +8,7 @@ var barTask = GetBarAsync();
 Console.WriteLine(fooTask.IsCompleted); // False
 
 // Instead of awaiting tasks one by one, the data can be loaded in parallel by performing multiple asynchronous operations at the same time.
-// Task.WhenAll accepts a tasks collection, it creates and returns a Task,
+// Task.WhenAll accepts a task collection, it creates and returns a Task,
 // which task status is completed only when all the tasks passed to the method are marked as completed.
 int[] arrayResult = await Task.WhenAll(fooTask, barTask);
 
@@ -17,7 +17,7 @@ Console.WriteLine(sw.ElapsedMilliseconds); // ~1000ms elapsed
 
 Console.WriteLine(arrayResult.Sum()); // Getting the data from an array
 
-// Getting results one by one from completed tasks with Task.Result.
+// Getting result one by one from completed tasks with Task.Result.
 // Tasks were awaited, it means that they are completed, and it's safe to use Task.Result.
 Console.WriteLine(fooTask.Result + barTask.Result);
 

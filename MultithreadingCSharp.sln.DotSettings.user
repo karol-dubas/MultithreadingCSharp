@@ -4,4 +4,6 @@
     &lt;TestId&gt;xUnit::53B8B86A-333C-4A44-A102-1782161AB427::net8.0::AsyncApi.LoadTests.ApiTest.Test_Sync_Endpoint&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::53B8B86A-333C-4A44-A102-1782161AB427::net8.0::AsyncApi.LoadTests.ApiTest.Test_Async_Endpoint&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
+&lt;/SessionState&gt;</s:String>
+	
+	</wpf:ResourceDictionary>
