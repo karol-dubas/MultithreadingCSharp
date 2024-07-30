@@ -221,19 +221,17 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
    }
    ```
 
-2. Check `CancellationTokenSource`, `CancellationTokenSource.Dispose` etc.
+2. Own awaitable type with `GetAwaiter`
 
-3. Own awaitable type with `GetAwaiter`
+3. `Task.Yield`
 
-4. `Task.Yield`
+4. `ValueTask`
 
-5. `ValueTask`
-
-6. Background processing with channels
+5. Background processing with channels
    [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
    
-7. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
+6. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
 
-8. Program, Process, Thread  
+7. Program, Process, Thread  
    ![Program, Process, Thread](assets/Program_Process_Thread.png)  
    [source](https://www.youtube.com/channel/UCZgt6AzoyjslHTC9dz0UoTw/community?lb=UgkxC7h3_WHiaeRFkHvbBzmlJudh-7q3W1Cj)
