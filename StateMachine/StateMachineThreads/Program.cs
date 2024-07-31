@@ -1,28 +1,21 @@
-﻿Console.WriteLine($"Start 1: {Environment.CurrentManagedThreadId}");
-await Test();
-Console.WriteLine($"End 1: {Environment.CurrentManagedThreadId}");
-Console.ReadKey(false);
+﻿using Helpers;
 
-// TODO: no await version (compare thread ids)
-// TODO: difference between starting background operation with Task.Run(Test) vs Test()
+ThreadExtensions.PrintCurrentThread(1);
+await Test(); // Comment/uncomment await to see the difference
+ThreadExtensions.PrintCurrentThread(4); // Continues on the same thread (await changes it)
+Console.ReadKey();
 
-// Console.WriteLine($"Start 2: {Environment.CurrentManagedThreadId}");
-// Task.Run(Test);
-// Console.WriteLine($"End 2: {Environment.CurrentManagedThreadId}");
-// Console.ReadKey(false);
-
-async Task Test(int param = 1)
+async Task Test()
 {
-    // Copies whole stack: local variables, params, "this" variables and contexts
-    int i = 1; 
+    ThreadExtensions.PrintCurrentThread(2); // Still the same thread (awaited or not)
     
-    Console.WriteLine($"Before: {Environment.CurrentManagedThreadId}");
-    await Task.Delay(1_000); // Task is returned and this runs in parallel on another thread
+    // Task was returned (handle to that method execution) via the async state machine,
+    // and this runs in parallel on another thread.
+    await Task.Delay(500);
     
-    // It depends on SynchronizationContext. Console & ASP.NET Core apps don't have it, WPF has 
-    //var sc = SynchronizationContext.Current;
+    // Continuation on previous thread depends on SynchronizationContext.
+    // Unlike desktop apps, console & ASP.NET (new) don't have it.
+    Console.WriteLine($"SynchronizationContext: {SynchronizationContext.Current}");
     
-    Console.WriteLine($"After: {Environment.CurrentManagedThreadId}"); // TODO: different thread
-    
-    i = 2; // Stack is restored after await
+    ThreadExtensions.PrintCurrentThread(3); // No SynchronizationContext means continuing on a random ThreadPool's thread.
 }

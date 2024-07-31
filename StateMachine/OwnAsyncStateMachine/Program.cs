@@ -83,7 +83,8 @@ internal struct StateMachine : IAsyncStateMachine
         }
         catch (Exception e)
         {
-            MethodBuilder.SetException(e); // set exception on a Task
+            // Everything is wrapped in try catch, caught exception is set on a Task
+            MethodBuilder.SetException(e); 
             State = -2; // finished
         }
     }

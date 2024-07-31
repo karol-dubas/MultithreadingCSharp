@@ -154,7 +154,7 @@ Allows to use `await` keyword and spawns a **state machine**
 - Guarantees that the code after it won't be executed until the asynchronous operation is completed
 - Retrieves result when available, unwrapping `Task<T>` result
 - Makes sure that there were no exceptions with awaited task or re-throws exceptions that occured inside the `Task`, if task failed
-- Introduces continuation that allows to get back to the original context (thread). Code after `await` will run once task has completed, and it will run on the same thread that spawned asynchronous operation
+- Introduces continuation that allows to get back to the original context (thread). Code after `await` will run once task has completed
 - Keyword `await` can be used on any _awaitable_ type, which can be created by implementing `GetAwaiter` method
 
 #### `Task`
@@ -211,8 +211,7 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
    cts.Cancel();
 
-   // And what is the task status before and after this?
-   // App can't close properly without this, why is that?
+   // Wait for completion and continue, re-throw exception if occured
    await backgroundTask;
 
    async Task StartBackgroundService(CancellationToken ct)

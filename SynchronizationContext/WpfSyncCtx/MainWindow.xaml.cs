@@ -48,7 +48,7 @@ public partial class MainWindow
             ThreadExtensions.PrintCurrentThread(2); // Thread #2
         }).ConfigureAwait(false); // No continuation enqueue on a ThreadPool
         
-        // TODO:
+        // TODO: validate comment below
         // Each method marked with `async` has its own asynchronous context,
         // therefore it only affects the continuation in the method that you are operating in.
 

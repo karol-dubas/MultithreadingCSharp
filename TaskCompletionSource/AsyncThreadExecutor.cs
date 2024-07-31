@@ -12,7 +12,8 @@ public class AsyncThreadExecutor : ThreadExecutor
     
     // TODO: What is the difference compared to wrapping with Task.Run returning its Task and awaiting it?
     
-    // TODO: If two methods are needed, sync and async version, don't wrap sync version with `Task.Run` just to make it async.
+    // TODO: Validate this comment below:
+    // If two methods are needed, sync and async version, don't wrap sync version with `Task.Run` just to make it async.
     // It should be copied and refactored, implemented properly.
     public Task ExecuteAllAsync()
     {
