@@ -3,9 +3,11 @@
 - Program is run in a thread (main thread)
 - Hyper-Threading/SMT allows CPU core to handle both threads at the same time
 - CPU thread priorities are managed by OS, but it can be configured
-- Program performance using multiple threads depends on what hardware it is running on.
+- Program performance using multiple threads depends on what hardware it is running on
 
 ![Concurrency vs Parallelism](assets/Concurrency_Parallelism.png)
+
+![Program, Process, Thread](assets/Program_Process_Thread.png)
 
 # Concurrent programming
 
@@ -27,8 +29,6 @@ After calling an I/O operation, we can wait for the result:
 
 - synchronously, blocking the resources until the result is returned
 - asynchronously, which doesn't block the resources
-
-Debugging doesn't stop asynchronous operations.
 
 ## Asynchronous operations benefits example
 
@@ -199,38 +199,12 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
 # Questions / TODO
 
-1. Is async method with no await started like Task.Run?
+1. Own awaitable type with `GetAwaiter`
 
-   ```cs
-   using var cts = new CancellationTokenSource();
+2. `ValueTask`
 
-   // Is thread pool involved here? How does it work? Is it a different thread?
-   var backgroundTask = StartBackgroundService(cts.Token);
-
-   // ...
-
-   cts.Cancel();
-
-   // Wait for completion and continue, re-throw exception if occured
-   await backgroundTask;
-
-   async Task StartBackgroundService(CancellationToken ct)
-   {
-        while (!ct.IsCancellationRequested) { /* ... */ }
-   }
-   ```
-
-2. Own awaitable type with `GetAwaiter`
-
-3. `Task.Yield`
-
-4. `ValueTask`
-
-5. Background processing with channels
+3. Background processing with channels
    [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
    
-6. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
-
-7. Program, Process, Thread  
-   ![Program, Process, Thread](assets/Program_Process_Thread.png)  
-   [source](https://www.youtube.com/channel/UCZgt6AzoyjslHTC9dz0UoTw/community?lb=UgkxC7h3_WHiaeRFkHvbBzmlJudh-7q3W1Cj)
+4. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
+   

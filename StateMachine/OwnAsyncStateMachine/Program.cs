@@ -63,8 +63,13 @@ internal struct StateMachine : IAsyncStateMachine
 
                     // Schedule state machine to execute when async operation is completed.
                     // It saves the machine's state (stack -> heap) and returns control to the caller.
+                    
+                    // State machine returns a Task which is a handle to that async operation.
+                    // This Task is not completed, and will be resumed when awaiter signals completion (calling IAsyncStateMachine.MoveNext),
+                    // executing from the point it was suspended using the saved state.
                     // Task Scheduler and OS are involved to resume code execution when a result is available.
                     MethodBuilder.AwaitUnsafeOnCompleted(ref _taskAwaiter, ref this);
+                    
                     Console.WriteLine("State machine state moved to heap");
                     return; // state saved, leave and wait for a result
                 }
