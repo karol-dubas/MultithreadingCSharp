@@ -199,12 +199,7 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
 # Questions / TODO
 
-1. Own awaitable type with `GetAwaiter`
+1. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
 
-2. `ValueTask`
-
-3. Background processing with channels
+2. Background processing with channels
    [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
-   
-4. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
-   
