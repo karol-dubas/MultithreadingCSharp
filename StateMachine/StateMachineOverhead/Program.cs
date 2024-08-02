@@ -20,14 +20,6 @@ catch (Exception e)
 
 // There is no await inside a method, so it isn't an asynchronous method.
 // The async keyword isn't needed here, it forces to return a Task, and spawns an unnecessary state machine.
-async Task TestAsync()
-{
-    throw new Exception("Oops");
-    Console.WriteLine("Inside a method");
-}
+async Task TestAsync() => throw new Exception("Oops");
 
-void Test()
-{
-    throw new Exception("Oops");
-    Console.WriteLine("Inside a method");
-}
+void Test() => throw new Exception("Oops");

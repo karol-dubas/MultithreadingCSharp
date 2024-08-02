@@ -7,7 +7,7 @@ Console.WriteLine("Started");
 
 // Resources can be cleaned up asynchronously by implementing IAsyncDisposable and await using
 await using var service = new Service();
-var numbersEnumerator = service.GetNumbers();
+var numbersEnumerator = service.GetNumbers(); // not passing a CancellationToken, it is passed by IAsyncEnumerable.WithCancellation
 
 // https://stackoverflow.com/questions/59300561/whats-the-difference-between-returning-asyncenumerable-with-enumeratorcancellat
 // EnumeratorCancellationAttribute is used with IAsyncEnumerable.WithCancellation

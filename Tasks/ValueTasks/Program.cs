@@ -14,6 +14,7 @@ public class Cache
 
     public async ValueTask<int> GetValueAsync()
     {
+        // Hot path doesn't call await.
         // The result is already available, and the operation is synchronous,
         // memory allocation overhead can be reduced with a ValueTask.
         if (_cachedValue.HasValue)

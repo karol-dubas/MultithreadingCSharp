@@ -27,5 +27,3 @@ async Task Test()
         Console.WriteLine("Inside a method");
     }
 }
-
-// TODO: Test() with Task.Yield vs Task.Run(Test) without Task.Yield etc.

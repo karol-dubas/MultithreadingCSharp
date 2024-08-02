@@ -30,7 +30,7 @@ After calling an I/O operation, we can wait for the result:
 - synchronously, blocking the resources until the result is returned
 - asynchronously, which doesn't block the resources
 
-## Asynchronous operations benefits example
+## Asynchronous operation benefit examples
 
 ### Synchronous (blocking) web server example
 
@@ -203,3 +203,6 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
 2. Background processing with channels
    [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
+
+3. CPU bound operations - parallel programming, executing work on multiple threads
+   I/O bound operations - asynchronous programming, which uses parallel programming and notifies when result is available

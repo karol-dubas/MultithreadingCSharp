@@ -1,6 +1,6 @@
 ﻿using Helpers;
 
-// Task.Run Queues delegates in the TaskScheduler and later in ThreadPool for execution.
+// Task.Run queues delegates in the TaskScheduler and later in ThreadPool for execution.
 
 // Unlike async & await, which changes thread on first encountered await,
 // Task.Run schedules delegate on a new thread immediately (assuming that ThreadPool isn't busy).
