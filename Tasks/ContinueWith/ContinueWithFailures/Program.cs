@@ -6,6 +6,8 @@
         return Random.Shared.Next(2) == 1 ? 1 : throw new Exception("Oops");
     });
 
+    // This code below should be refactored to a try catch and Task completion status check
+    
     task.ContinueWith(t =>
     {
         Console.WriteLine(

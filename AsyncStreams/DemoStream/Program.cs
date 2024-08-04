@@ -1,17 +1,19 @@
 ﻿using Helpers;
 
-// TODO: https://learn.microsoft.com/en-us/archive/msdn-magazine/2019/november/csharp-iterating-with-async-enumerables-in-csharp-8#a-tour-through-async-enumerables
-
 int sum = 0;
 
 // Consuming a stream:
-var numbersEnumerator = /*await*/ GetNumbers(); // Can't be awaited, because it's an enumeration
+var numbersEnumerator = GetNumbers(); // It can't be transformed to another collection (it can be infinite)
 await foreach (int number in numbersEnumerator) // Asynchronously retrieve the data 
 {
-    // It awaits each item in the enumeration.
-    // Foreach body is a continuation of each enumeration.
+    // Just calling the IAsyncEnumerable method won't "start" it,
+    // it has to be consumed with await foreach loop to start sending data.
     
-    //ThreadExtensions.PrintCurrentThread(1);
+    // The whole enumerator can't be awaited.
+    // Each item in the enumeration is awaited instead.
+    // The foreach body is a continuation of each enumeration.
+    
+    ThreadExtensions.PrintCurrentThread(2);
     Console.WriteLine($"Current sum = {sum += number}");
 }
 
@@ -20,9 +22,9 @@ await foreach (int number in numbersEnumerator) // Asynchronously retrieve the d
 // exposing an enumerator that provides asynchronous iteration.
 async IAsyncEnumerable<int> GetNumbers()
 {
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 5; i++)
     {
-        //ThreadExtensions.PrintCurrentThread(2);
+        ThreadExtensions.PrintCurrentThread(1);
         await Task.Delay(100);
         
         // Method must yield return, it signals to the iterator using this enumerator

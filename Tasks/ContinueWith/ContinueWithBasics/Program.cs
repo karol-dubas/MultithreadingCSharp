@@ -5,7 +5,7 @@
 
 ThreadExtensions.PrintCurrentThread(1);
 
-var loadLinesTask = Task.Run(async () =>
+var getNumberTask = Task.Run(async () =>
 {
     ThreadExtensions.PrintCurrentThread(3);
     await Task.Delay(500);
@@ -13,7 +13,7 @@ var loadLinesTask = Task.Run(async () =>
 });
 
 // ContinueWith allows for a continuation, and it will run when the task has finished
-var processStocksTask = loadLinesTask.ContinueWith(completedTask =>
+var printNumberTask = getNumberTask.ContinueWith(completedTask =>
 {
     ThreadExtensions.PrintCurrentThread(4);
 
@@ -24,4 +24,5 @@ var processStocksTask = loadLinesTask.ContinueWith(completedTask =>
 });
 
 ThreadExtensions.PrintCurrentThread(2);
-Console.ReadKey();
+
+await printNumberTask;
