@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 // The Parallel executes operations by dividing work into chunks and distributing it across multiple threads,
 // aiming to use all available processors efficiently.
@@ -73,10 +72,9 @@ Console.WriteLine($"Multi threaded (opti.): " +
                   $"sum = {sum}, " +
                   $"time = {stopwatch.ElapsedMilliseconds} ms");
 
-
 // Asynchronous + parallel calculation (multi threaded)
 sum = 0;
-SemaphoreSlim sem = new(1); // not needed here and makes it slower
+SemaphoreSlim sem = new(1, 1); // not needed here and makes it slower
 stopwatch.Restart();
 
 await Parallel.ForEachAsync(numbers, async (number, _) =>

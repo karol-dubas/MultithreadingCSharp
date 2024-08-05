@@ -12,14 +12,13 @@
 # Concurrent programming
 
 Concurrent programming made it possible to solve the problem of multitasking when the first OS were created, even with only 1 CPU core.
-During concurrent programming, there is a **context switching**, that is imperceptible to humans (looks like parallelism).
+Concurrent means executing multiple tasks on a 1 thread/core and during it there is a **context switching**, that is imperceptible to humans (looks like parallelism).
 
 # Asynchronous programming
 
-Solves the problem of blocking threads (not concurrency or parallelism).
+It solves the problem of blocking threads (not related to concurrency or parallelism) using parallel/concurrent programming and notifies when the result is available.
 
 Used for I/O operations that are beyond the scope of the application and require processing time in an external program:
-
 - network resources
 - disk write & read
 - memory
@@ -36,7 +35,7 @@ After calling an I/O operation, we can wait for the result:
 
 Synchronous web application with 1 CPU core during the request execution starts a new thread, if it performs synchronous operation, it will block the application.
 If application is used by more than 1 user, concurrent programming with context switching is used to handle such requests (1 CPU core).
-Web server has a thread pool with limited number of threads (that handle requests). By default, it's `(CPU physical core number) x (number of threads that can be run on each core)`, so if the CPU has 6 cores and 2 threads on each, there will be 12 threads in the thread pool available to use. When the number of available threads is exceeded, a thread throttling mechanism kicks in.
+Web server has a **ThreadPool** with limited number of threads (that handle requests). By default, it's `(CPU physical core number) x (number of threads that can be run on each core)`, so if the CPU has 6 cores and 2 threads on each, there will be 12 threads in the **ThreadPool** available to use. When the number of available threads is exceeded, a thread throttling mechanism kicks in.
 The synchronous approach makes the thread in such an approach wait most of the time for the result and during this time it could perform other operations.
 
 ![alt text](assets/image-1.png)
@@ -64,7 +63,8 @@ API sync load test scenario (5s timeout)
 
 Asynchronous programming can be implemented on 1 thread, it doesn't require more than 1 core or 1 thread, but it's welcomed to use multiple threads.
 
-In the asynchronous version as in the synchronous version - one thread is taken from the **ThreadPool** to handle the request, but instead of blocking the thread, while waiting for the result, it is returned to the thread pool, and it can be reused by another request. After receiving the result continuation doesn't have to take place on the same thread on which it was started, **ThreadPool** can allocate another thread. Storing context execution is needed to continue code execution properly.
+In the asynchronous version as in the synchronous version - one thread is taken from the **ThreadPool** to handle the request, but instead of blocking the thread, while waiting for the result, it is returned to the **ThreadPool**, and it can be reused by another request.
+After receiving the result continuation doesn't have to take place on the same thread on which it was started, **ThreadPool** can allocate another thread (`SynchronizationContext`). Storing context execution is needed to continue code execution properly after awaiting.
 
 ![alt text](assets/image-2.png)
 
@@ -87,8 +87,6 @@ API async load test scenario (5s timeout)
     - ok:       109430  (p50 = 1218.56 ms, p75 = 1296.38 ms, p95 = 1704.96 ms, p99 = 1797.12 ms)
     - fail:     67      (min > 5s)
 ```
-
-Asynchronous operations occurs in parallel, but it subscribes to when that operation completes.
 
 ## C# asynchronous patterns history
 
@@ -184,7 +182,7 @@ It works in other/older .NET applications, and should be used in libraries, beca
 - Used in the CPU bound scenarios to maximize performance.
 - Split and solve small pieces independently, use as much computer resources as possible
 - CPU cores can perform operations independently, so with their use we can program in parallel
-- Allows for both asynchronous and parallel programming
+- Parallel operations shouldn't be synchronized, because it slows down the performance
 
 # Race conditions
 
@@ -199,10 +197,5 @@ A deadlock occurs if 2 threads depend on each other and one of them is blocked.
 
 # Questions / TODO
 
-1. Are all `await foreach` continuations running on the same new thread? What is the point of that mechanism?
-
-2. Background processing with channels
+1. Background processing with channels
    [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
-
-3. CPU bound operations - parallel programming, executing work on multiple threads
-   I/O bound operations - asynchronous programming, which uses parallel programming and notifies when result is available
