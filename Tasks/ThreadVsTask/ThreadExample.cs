@@ -12,6 +12,8 @@ public class ThreadExample
         {
             _startSem.Wait();
 
+            // It is synchronous like the Task example, but the CPU can switch executing threads,
+            // because there is no Task blocking the Thread, therefore, we won't experience a deadlock.
             lock (_lock)
             {
                 _service.DoWork().GetAwaiter().GetResult();
@@ -29,5 +31,8 @@ public class ThreadExample
         }
 
         _startSem.Release(threadCount);
+
+        foreach (var thread in threads)
+            thread.Join();
     }
 }

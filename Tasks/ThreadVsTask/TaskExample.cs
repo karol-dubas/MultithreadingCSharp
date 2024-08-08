@@ -12,11 +12,12 @@ public class TaskExample
         {
             await _startSem.WaitAsync();
 
-            // Task attached to a Thread blocks the execution of the Thread.
-            // Blocking the Task blocks the Thread, blocked Thread can't pick up any other Task.
-            // Next tasks will wait here and block attached Thread.
-            // If there are more Tasks than Threads it will cause a deadlock.
-            // The CPU will try to perform operations on the Thread that is blocked and in effect it won't do anything.
+            // The lock blocks the Task.
+            // Blocking the Task blocks the Thread, and blocked Thread can't pick up any other Task.
+            // Next Tasks will wait here and block attached Threads.
+            // The CPU will try to perform operations on the Thread that is blocked,
+            // and in effect, it won't do anything.
+            // If there are more Tasks than threads, it will cause a deadlock.
             lock (_lock)
             {
                 _service.DoWork().GetAwaiter().GetResult();
@@ -29,9 +30,10 @@ public class TaskExample
         {
             // Send the Task to the ThreadPool, which will assign a thread to execute it.
             // Task -> TaskScheduler -> ThreadPool -> Thread -> CPU.
-            // ThreadPool manages creating appropriate amount of threads needed to run created tasks,
+            // ThreadPool manages to create the appropriate number of threads needed to run created tasks,
             // but we don't know how many Threads will be used.
-            // CPU can switch threads, but ThreadPool can't do the same with tasks, once it's attached it can't be detached.
+            // CPU can switch threads, but ThreadPool can't do the same with tasks.
+            // Once it's attached, it can't be detached.
             var task = Task.Run(Fn);
             
             tasks.Add(task);

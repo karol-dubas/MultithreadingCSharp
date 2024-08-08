@@ -72,6 +72,7 @@ Console.WriteLine($"Multi threaded (opti.): " +
                   $"sum = {sum}, " +
                   $"time = {stopwatch.ElapsedMilliseconds} ms");
 
+// TODO: why is it so slow compared to other examples?
 // Asynchronous + parallel calculation (multi threaded)
 sum = 0;
 SemaphoreSlim sem = new(1, 1); // not needed here and makes it slower
