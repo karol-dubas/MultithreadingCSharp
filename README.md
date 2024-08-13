@@ -194,8 +194,3 @@ Standard .NET collections aren't thread-safe, so **synchronization mechanism** s
 # Deadlocks
 
 A deadlock occurs if 2 threads depend on each other and one of them is blocked.
-
-# Questions / TODO
-
-1. Background processing with channels
-   [link](https://code-maze.com/aspnetcore-long-running-tasks-monolith-app/)
