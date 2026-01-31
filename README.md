@@ -38,7 +38,25 @@ If application is used by more than 1 user, concurrent programming with context 
 Web server has a **ThreadPool** with limited number of threads (that handle requests). By default, it's `(CPU physical core number) x (number of threads that can be run on each core)`, so if the CPU has 6 cores and 2 threads on each, there will be 12 threads in the **ThreadPool** available to use. When the number of available threads is exceeded, a thread throttling mechanism kicks in.
 The synchronous approach makes the thread in such an approach wait most of the time for the result and during this time it could perform other operations.
 
-![alt text](assets/image-1.png)
+```mermaid
+sequenceDiagram
+    participant S as Server
+    participant D as DB
+
+    activate S
+    Note over S: Uses Thread Pool
+
+    S->>D: Execute query (synchronous)
+    activate D
+    Note over S: Thread is blocked (it's waiting!)
+
+    D-->>S: Result
+    deactivate D
+
+    Note over S: Thread wakes up
+    deactivate S
+
+```
 
 ```cs
 app.MapGet("/sync", () =>
@@ -66,7 +84,28 @@ Asynchronous programming can be implemented on 1 thread, it doesn't require more
 In the asynchronous version as in the synchronous version - one thread is taken from the **ThreadPool** to handle the request, but instead of blocking the thread, while waiting for the result, it is returned to the **ThreadPool**, and it can be reused by another request.
 After receiving the result continuation doesn't have to take place on the same thread on which it was started, **ThreadPool** can allocate another thread (`SynchronizationContext`). Storing context execution is needed to continue code execution properly after awaiting.
 
-![alt text](assets/image-2.png)
+```mermaid
+sequenceDiagram
+    participant S as Server
+    participant D as DB
+
+    activate S
+    Note over S: Uses Thread Pool
+
+    S->>D: Execute query (async)
+    activate D
+    Note over S: The used thread is released back to the Thread Pool
+    deactivate S
+
+    Note right of D: ~1s
+    D-->>S: Result
+    deactivate D
+
+    activate S
+    Note over S: Uses Thread Pool and continues
+    deactivate S
+
+```
 
 ```cs
 app.MapGet("/async", async () =>
